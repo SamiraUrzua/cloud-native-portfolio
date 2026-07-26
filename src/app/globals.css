@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* G: Ink + Periwinkle — unchanged, already solid */
+  /* --background: #0A0A0C;
+  --surface: #141418;
+  --text: #EDEDED;
+  --text-muted: #8A8A8E;
+  --accent: #7C8BFF;
+  --accent-secondary: #AEB7FF; */
+
+  /* B: Quiet Dusk + Electric Thought — accents rebuilt as a real complementary pair */
+  /* --background: #161B2E;
+  --surface: #252D4A;
+  --text: #EDEDF0;
+  --text-muted: #929AB9;
+  --accent: #4CBFF0;
+  --accent-secondary: #F5B83D; */
+
+  /* 1: Deep Navy + Gold — gold kept as the hero, secondary now recedes instead of competing */
+  --background: #000814;
+  --surface: #003566;
+  --text: #E5E9F0;
+  --text-muted: #95AEC6;
+  --accent: #FFC300;
+  --accent-secondary: #88BADD;
+
+  /* 2: Deep Plum + Fresh Green — unchanged, already solid */
+  /* --background: #150F22;
+  --surface: #2A2044;
+  --text: #F4F1F8;
+  --text-muted: #A8A2B8;
+  --accent: #70D090;
+  --accent-secondary: #B6F2C6; */
+
+  /* D: Ember + Ink — teal secondary lightened, it was nearly invisible before */
+  /* --background: #1B1B1F;
+  --surface: #27272D;
+  --text: #F6F2EC;
+  --text-muted: #B8B0A5;
+  --accent: #E07B4C;
+  --accent-secondary: #39BCC6; */
+
+  /* E: Neon Violet + Warm Void — violet desaturated so it stops vibrating against the background */
+  /* --background: #120C1A;
+  --surface: #1E162B;
+  --text: #F3F0F7;
+  --text-muted: #C9B8E2;
+  --accent: #9947E1;
+  --accent-secondary: #F5A623; */
+
+  /* F: Violet Dusk — same violet fix as E, applied to its secondary role here */
+  /* --background: #120C1A;
+  --surface: #1F162E;
+  --text: #F3F0F7;
+  --text-muted: #8D83A6;
+  --accent: #F0A848;
+  --accent-secondary: #9947E1; */
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--background);
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.section-grid {
+  @apply grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12;
+}
+
+.page-container {
+  @apply w-full max-w-6xl mx-auto px-6;
 }
