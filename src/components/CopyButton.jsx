@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function CopyIcon({ size = 18 }) {
   return (
@@ -27,12 +27,25 @@ export default function CopyButton({
   label = 'Copiar al portapapeles',
 }) {
   const [copiado, setCopiado] = useState(false);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const manejarCopia = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 2000);
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+      timeoutRef.current = setTimeout(() => {
+        setCopiado(false);
+        timeoutRef.current = null;
+      }, 2000);
     } catch (err) {
       console.error('Error al copiar: ', err);
     }
