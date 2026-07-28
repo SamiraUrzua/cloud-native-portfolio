@@ -22,12 +22,18 @@ function CheckIcon({ size = 18 }) {
 export default function CopyButton({
   text,
   size = 18,
-  variant = 'icon', // 'icon' | 'boxed'
+  variant = 'icon',
   className = '',
   label = 'Copiar al portapapeles',
+}: {
+  text: string;
+  size?: number;
+  variant?: string;
+  className?: string;
+  label?: string;
 }) {
   const [copiado, setCopiado] = useState(false);
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {

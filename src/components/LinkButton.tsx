@@ -1,4 +1,7 @@
-export default function LinkButton({ href, icon, children, className = '' }) {
+import type { ReactNode } from 'react';
+
+export default function LinkButton({ href, icon, children, className = '' }: 
+  { href: string; icon?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <a
       href={href}
