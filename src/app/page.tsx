@@ -1,4 +1,4 @@
-import ContactEmail from '@/components/ContactEmail';
+import ContactCard from '@/components/ContactCard';
 
 export default function Home() {
   return (
@@ -23,7 +23,7 @@ export default function Home() {
               lo hago porque soy muy cul. 
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-2">
-              <ContactEmail />
+              <ContactCard />
             </div>
           </div>
         </section>
