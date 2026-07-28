@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Instrument_Sans } from "next/font/google";
-import "./globals.css";
-// Import your portal component
-import WallHolePortal from "../components/WallHolePortal"; 
+import "@/app/globals.css";
+import Navbar from "@/components/Navbar";
+import WallHolePortal from "@/components/WallHolePortal"; 
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -30,7 +30,8 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${instrumentSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col relative bg-zinc-950 text-zinc-50">
+      <body className="min-h-full flex flex-col relative bg-background text-text">
+        <Navbar />
         {children}
         <WallHolePortal />
       </body>

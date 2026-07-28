@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main>
       <div className="page-container">
-        <section className="section-grid min-h-screen items-center py-24">
+        <section className="section-grid items-center pt-8 pb-24">
           <div className="col-span-4 md:col-span-8 lg:col-span-6 flex flex-col justify-center gap-8 order-2 lg:order-1">
             <div className="flex items-center gap-3">
               <span className="h-px w-8 bg-accent" />
