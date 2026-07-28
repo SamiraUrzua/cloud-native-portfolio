@@ -6,6 +6,7 @@ import CopyButton from "@/components/CopyButton";
 import { siteConfig } from "@/lib/config";
 
 const NAV_LINKS = [
+  { href: "/experience", label: "Experience" },
   { href: "/projects", label: "Projects" },
   { href: "/about", label: "About" },
 ];
