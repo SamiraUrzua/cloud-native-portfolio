@@ -40,13 +40,13 @@ export default function Navbar() {
           >
             <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-text/20 to-transparent" />
 
-            <Link href="/" className="text-nav tracking-tight hover:text-accent transition-colors relative z-50">
+            <Link href="/" className="relative text-nav transition-colors hover:text-accent after:absolute after:left-0 after:-bottom-1 after:h-px after:w-full after:bg-current after:origin-center after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100">
               Samira
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
               {NAV_LINKS.map(({ href, label }) => (
-                <Link key={href} href={href} className="text-nav hover:text-accent transition-colors">
+                <Link key={href} href={href} className="relative text-nav transition-colors hover:text-accent after:absolute after:left-0 after:-bottom-1 after:h-px after:w-full after:bg-current after:origin-center after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100">
                   {label}
                 </Link>
               ))}
