@@ -1,18 +1,25 @@
 import Phaser from 'phaser';
-import BootScene from './scenes/BootScene';
-import WorldScene from './scenes/WorldScene';
+import { BootScene } from '@/game/scenes/BootScene';
+import { GameScene } from '@/game/scenes/GameScene';
 
-export const gameConfig: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  width: 1600,
-  height: 800,
-  pixelArt: true,
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { x: 0, y: 0 },
-      debug: false,
-    },
-  },
-  scene: [BootScene, WorldScene],
-};
+export const GAME_WIDTH = 1600;
+export const GAME_HEIGHT = 800;
+
+export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameConfig {
+    return {
+        type: Phaser.AUTO,
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+        parent,
+        backgroundColor: '#1a1a2e',
+        pixelArt: true,
+        antialias: true,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { x: 0, y: 0 },
+            },
+        },
+        scene: [BootScene, GameScene],
+    };
+}
