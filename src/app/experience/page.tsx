@@ -46,7 +46,7 @@ export default function Experience() {
           <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2 flex flex-col gap-12">
             <h1 className="text-display">Experiencia profesional</h1>
             <div className="relative flex flex-col gap-16">
-              <div className="absolute left-[6px] top-2 md:top-3 bottom-2 w-px -translate-x-1/2 bg-accent/20" />
+              <div className="absolute left-[6px] top-2 md:top-3 bottom-2 w-[2px] -translate-x-1/2 bg-accent/40" />
               {roles.map((role) => (
                 <div key={role.title} className="flex gap-6">
                   <div className="flex w-[12px] justify-center pt-2 md:pt-3">
