@@ -55,10 +55,17 @@ export default function Experience() {
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
                       <h2 className="text-heading text-accent">{role.title}</h2>
-                      <p className="text-body-muted">
-                        {role.company ? `${role.company} · ` : ''}
-                        {role.period}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {role.company && (
+                          <span className="text-body font-medium">
+                            {role.company}
+                          </span>
+                        )}
+                        {role.company && <span className="text-body">·</span>}
+                        <span className="text-body">
+                          {role.period}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex flex-col gap-3 max-w-3xl">
                       {role.points.map((point) => (
@@ -67,11 +74,11 @@ export default function Experience() {
                         </p>
                       ))}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                       {role.stack.map((tech) => (
                         <span
                           key={tech}
-                          className="text-label rounded-full bg-accent/10 px-3 py-1 text-accent"
+                          className="text-label rounded-full border border-accent/40 bg-accent/15 px-3.5 py-1.5 text-accent font-semibold"
                         >
                           {tech}
                         </span>
