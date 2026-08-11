@@ -1,3 +1,3 @@
 export const siteConfig = {
-  contactEmail: "contacto@ladeveloper.dev",
+  contactEmail: "contacto@samiraurzua.dev",
 };
