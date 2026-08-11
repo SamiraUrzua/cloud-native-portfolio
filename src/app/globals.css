@@ -150,3 +150,37 @@ canvas {
     color: var(--text);
   }
 }
+
+@keyframes firefly-float {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.4;
+  }
+
+  25% {
+    transform: translate3d(var(--x1), var(--y1), 0);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate3d(var(--x2), var(--y2), 0);
+    opacity: 0.6;
+  }
+
+  75% {
+    transform: translate3d(var(--x1), var(--y2), 0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.4;
+  }
+}
+
+.firefly {
+  animation-name: firefly-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
