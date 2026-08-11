@@ -62,6 +62,5 @@ The site is a masterclass in modern frontend development, cloud infrastructure, 
 | **Frontend & UI** | Next.js (React), TypeScript, Tailwind CSS, shadcn/ui | Delivers a robust, lightning-fast, and accessible user interface using highly demanded industry standards. |
 | **Game Engine** | Phaser.js | Powers the retro 8-bit RPG portal and interactive dungeon crawler via HTML5 Canvas with buttery-smooth camera tracking. |
 | **Cloud Hosting** | AWS S3, Amazon CloudFront | Hosts the static export with a global CDN for sub-second worldwide load times and automatic HTTPS/SSL management. |
-| **Infrastructure as Code** | Terraform | The ultimate DevOps flex. Replaces manual clicking by declaring all infrastructure (S3, CDN, DNS) purely in code. |
-| **CI/CD Pipeline** | GitHub Actions | Automates deployment. Pushing code to the main branch automatically builds the site and applies Terraform configs. |
+| **CI/CD Pipeline** | GitHub Actions | Automates deployment. Pushing code to the main branch automatically builds the site. |
 | **Domain & Routing** | AWS Route 53, Zoho Mail (SaaS) | Manages custom DNS, MX, and TXT records to ensure 100% reliable, enterprise-grade email delivery without backend overhead. |
