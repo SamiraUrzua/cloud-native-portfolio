@@ -55,21 +55,23 @@ async function waitForNext() {
   }
 }
 
+const staticFileExtensionPattern = /\.[a-zA-Z0-9]+$/;
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${PROXY_PORT}`);
   const pathname = url.pathname;
 
+  const hasFileExtension = staticFileExtensionPattern.test(pathname);
   const isLocalized = locales.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
-
   const isNextNavigation =
-    req.headers.accept?.includes('text/html') ||
-    req.headers.rsc === '1';
+    req.headers.accept?.includes('text/html') || req.headers.rsc === '1';
 
-  if (req.method === 'GET' && isNextNavigation && !isLocalized) {
+  if (req.method === 'GET' && isNextNavigation && !isLocalized && !hasFileExtension) {
+    const normalizedPathname = pathname.endsWith('/') ? pathname : `${pathname}/`;
     const locale = getLocaleFromCookie(req.headers.cookie);
-    req.url = `/${locale}${pathname}${url.search}`;
+    req.url = `/${locale}${normalizedPathname}${url.search}`;
   }
 
   proxy.web(req, res, {}, (error) => {
