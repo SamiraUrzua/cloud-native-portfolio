@@ -4,7 +4,7 @@ export default function Experience() {
       title: 'Desarrolladora de Software Independiente',
       company: '',
       period: 'octubre 2023 - presente',
-      stack: ['Python', 'OpenCV'],
+      stack: ['Python', 'PySide', 'OpenCV', 'PyTorch', 'CUDA', 'Depth AI', 'Linux'],
       points: [
         'Desarrolló en Python una aplicación de escritorio de realidad mixta combinando entornos físicos y digitales. Sin experiencia previa en inteligencia artificial ni OpenCV, logró en un mes un prototipo funcional, cercano a tecnologías de vanguardia en el área.',
       ],
