@@ -69,9 +69,6 @@ const server = http.createServer((req, res) => {
 
   if (req.method === 'GET' && isNextNavigation && !isLocalized) {
     const locale = getLocaleFromCookie(req.headers.cookie);
-
-    console.log(`[locale] ${pathname} → /${locale}${pathname} (cookie: ${req.headers.cookie || 'none'})`);
-
     req.url = `/${locale}${pathname}${url.search}`;
   }
 
