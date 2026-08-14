@@ -31,7 +31,7 @@ export default async function LocaleLayout({children, params}:
   const { locale } = await params;
   return (
     <html lang={locale} className={`${spaceGrotesk.variable} ${instrumentSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col relative bg-background text-text">
+      <body className="min-h-screen flex flex-col relative bg-background text-text">
         <Navbar locale={locale as Locale} />
         {children}
         <WallHolePortal />
