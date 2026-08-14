@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
-import { siteConfig } from "@/lib/config";
+import { siteConfig, locales, type Locale } from "@/lib/config";
 
 const TRANSLATIONS = {
   en: {
@@ -20,16 +20,18 @@ const TRANSLATIONS = {
     about: "Sobre mí",
     sendEmail: "Enviar correo",
   },
-};
+} as const satisfies Record<Locale, any>;
 
-type Locale = keyof typeof TRANSLATIONS;
-type TranslationKey = keyof typeof TRANSLATIONS.en;
-
-const NAV_LINKS: { href: string; key: TranslationKey }[] = [
+const NAV_LINKS = [
   { href: "/experience", key: "experience" },
   { href: "/projects", key: "projects" },
   { href: "/about", key: "about" },
-];
+] as const;
+
+const LOCALE_METADATA: Record<Locale, { emoji: string; label: string }> = {
+  en: { emoji: "🇬🇧", label: "English" },
+  es: { emoji: "🇪🇸", label: "Español" },
+};
 
 function LanguageToggle({ locale }: { locale: Locale }) {
   const changeLanguage = (nextLocale: Locale) => {
@@ -40,27 +42,19 @@ function LanguageToggle({ locale }: { locale: Locale }) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <button
-        type="button"
-        onClick={() => changeLanguage("en")}
-        aria-label="English"
-        className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
-          locale === "en" ? "opacity-100" : "opacity-50 hover:opacity-100"
-        }`}
-      >
-        🇬🇧
-      </button>
-
-      <button
-        type="button"
-        onClick={() => changeLanguage("es")}
-        aria-label="Español"
-        className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
-          locale === "es" ? "opacity-100" : "opacity-50 hover:opacity-100"
-        }`}
-      >
-        🇪🇸
-      </button>
+      {locales.map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => changeLanguage(l)}
+          aria-label={LOCALE_METADATA[l].label}
+          className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
+            locale === l ? "opacity-100" : "opacity-50 hover:opacity-100"
+          }`}
+        >
+          {LOCALE_METADATA[l].emoji}
+        </button>
+      ))}
     </div>
   );
 }
