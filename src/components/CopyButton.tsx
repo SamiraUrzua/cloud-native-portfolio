@@ -1,6 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { type Locale } from '@/lib/config';
+import { type StrictTranslations } from '@/lib/localizer';
+
+const TRANSLATIONS = {
+  en: {
+    label: "Copy to clipboard",
+  },
+  es: {
+    label: "Copiar al portapapeles",
+  },
+} as const satisfies StrictTranslations<Record<Locale, any>>;
 
 function CopyIcon({ size = 18 }) {
   return (
@@ -21,17 +32,18 @@ function CheckIcon({ size = 18 }) {
 
 export default function CopyButton({
   text,
+  locale,
   size = 18,
   variant = 'icon',
   className = '',
-  label = 'Copiar al portapapeles',
 }: {
   text: string;
+  locale: Locale;
   size?: number;
   variant?: string;
   className?: string;
-  label?: string;
 }) {
+  const textDict = TRANSLATIONS[locale];
   const [copiado, setCopiado] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -66,8 +78,8 @@ export default function CopyButton({
     <button
       onClick={manejarCopia}
       className={`shrink-0 text-text-muted hover:text-accent transition-all duration-200 active:scale-95 flex items-center justify-center ${baseStyles} ${className}`}
-      title={label}
-      aria-label={label}
+      title={textDict.label}
+      aria-label={textDict.label}
     >
       {copiado ? <CheckIcon size={size} /> : <CopyIcon size={size} />}
     </button>

@@ -101,7 +101,7 @@ export default function Navbar({ locale }: { locale: Locale }) {
               ))}
               <div className="flex items-center gap-3">
                 <span className="text-nav whitespace-nowrap">{siteConfig.contactEmail}</span>
-                <CopyButton text={siteConfig.contactEmail} size={20} />
+                <CopyButton text={siteConfig.contactEmail} locale={locale} size={20} />
               </div>
               <LanguageToggle locale={locale} />
             </div>
