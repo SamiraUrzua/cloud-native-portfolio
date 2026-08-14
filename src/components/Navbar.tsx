@@ -5,15 +5,70 @@ import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
 import { siteConfig } from "@/lib/config";
 
-const NAV_LINKS = [
-  { href: "/experience", label: "Experience" },
-  { href: "/projects", label: "Projects" },
-  { href: "/about", label: "About" },
+const TRANSLATIONS = {
+  en: {
+    home: "Home",
+    experience: "Experience",
+    projects: "Projects",
+    about: "About",
+    sendEmail: "Send email",
+  },
+  es: {
+    home: "Inicio",
+    experience: "Experiencia",
+    projects: "Proyectos",
+    about: "Sobre mí",
+    sendEmail: "Enviar correo",
+  },
+};
+
+type Locale = keyof typeof TRANSLATIONS;
+type TranslationKey = keyof typeof TRANSLATIONS.en;
+
+const NAV_LINKS: { href: string; key: TranslationKey }[] = [
+  { href: "/experience", key: "experience" },
+  { href: "/projects", key: "projects" },
+  { href: "/about", key: "about" },
 ];
 
-export default function Navbar() {
+function LanguageToggle({ locale }: { locale: Locale }) {
+  const changeLanguage = (nextLocale: Locale) => {
+    if (nextLocale === locale) return;
+    document.cookie = `locale=${nextLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    window.location.reload();
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button
+        type="button"
+        onClick={() => changeLanguage("en")}
+        aria-label="English"
+        className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
+          locale === "en" ? "opacity-100" : "opacity-50 hover:opacity-100"
+        }`}
+      >
+        🇬🇧
+      </button>
+
+      <button
+        type="button"
+        onClick={() => changeLanguage("es")}
+        aria-label="Español"
+        className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
+          locale === "es" ? "opacity-100" : "opacity-50 hover:opacity-100"
+        }`}
+      >
+        🇪🇸
+      </button>
+    </div>
+  );
+}
+
+export default function Navbar({ locale }: { locale: Locale }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const text = TRANSLATIONS[locale];
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -45,31 +100,36 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
-              {NAV_LINKS.map(({ href, label }) => (
+              {NAV_LINKS.map(({ href, key }) => (
                 <Link key={href} href={href} className="relative text-nav transition-colors hover:text-accent after:absolute after:left-0 after:-bottom-1 after:h-px after:w-full after:bg-current after:origin-center after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100">
-                  {label}
+                  {text[key]}
                 </Link>
               ))}
               <div className="flex items-center gap-3">
                 <span className="text-nav whitespace-nowrap">{siteConfig.contactEmail}</span>
                 <CopyButton text={siteConfig.contactEmail} size={20} />
               </div>
+              <LanguageToggle locale={locale} />
             </div>
 
-            <button
-              ref={buttonRef}
-              className="md:hidden p-2 -mr-2 text-nav hover:text-accent focus:outline-none transition-colors relative z-50"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            <div className="md:hidden flex items-center gap-3">
+              <LanguageToggle locale={locale} />
+
+              <button
+                ref={buttonRef}
+                className="p-2 -mr-2 text-nav hover:text-accent focus:outline-none transition-colors relative z-50"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </nav>
         </div>
       </header>
@@ -81,16 +141,16 @@ export default function Navbar() {
               href="/"
               className="text-nav hover:text-accent transition-colors text-2xl font-medium"
             >
-              Home
+              {text.home}
             </Link>
 
-            {NAV_LINKS.map(({ href, label }) => (
+            {NAV_LINKS.map(({ href, key }) => (
               <Link
                 key={href}
                 href={href}
                 className="text-nav hover:text-accent transition-colors text-2xl font-medium"
               >
-                {label}
+                {text[key]}
               </Link>
             ))}
 
@@ -98,7 +158,7 @@ export default function Navbar() {
               href={`mailto:${siteConfig.contactEmail}`}
               className="text-nav hover:text-accent transition-colors text-2xl font-medium"
             >
-              Send email
+              {text.sendEmail}
             </a>
           </div>
         </div>
