@@ -1,6 +1,18 @@
 import CopyButton from '@/components/CopyButton';
 import LinkButton from '@/components/LinkButton';
-import { siteConfig } from '@/lib/config';
+import { siteConfig, type Locale } from '@/lib/config';
+import { type StrictTranslations } from '@/lib/localizer';
+
+const TRANSLATIONS = {
+  en: {
+    contactEmail: "Contact Email",
+    openInMailApp: "Open in mail app",
+  },
+  es: {
+    contactEmail: "Email de contacto",
+    openInMailApp: "Abrir en mi app de correo",
+  },
+} as const satisfies StrictTranslations<Record<Locale, any>>;
 
 function MailIcon() {
   return (
@@ -11,20 +23,24 @@ function MailIcon() {
   );
 }
 
-export default function ContactCard({ email = siteConfig.contactEmail, className = '' }) {
+export default function ContactCard({ locale, email = siteConfig.contactEmail, className = '' }: { 
+  locale: Locale; email?: string; className?: string; 
+}) {
+  const text = TRANSLATIONS[locale];
+
   return (
     <div className={`w-full flex flex-col gap-5 p-5 sm:p-6 rounded-2xl bg-surface/30 border border-accent-secondary/20 shadow-lg ${className}`}>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-base sm:text-lg uppercase tracking-wider font-semibold text-text-muted">
-          Email de contacto
+        <span className="text-base sm:text-xl uppercase tracking-wider font-semibold text-text-muted">
+          {text.contactEmail}
         </span>
-        <CopyButton text={email} variant="boxed" />
+        <CopyButton text={email} locale={locale} variant="boxed" />
       </div>
 
       <span className="text-feature w-full min-w-0 break-all">{email}</span>
 
       <LinkButton href={`mailto:${email}`} icon={<MailIcon />}>
-        Abrir en mi app de correo
+        {text.openInMailApp}
       </LinkButton>
     </div>
   );
