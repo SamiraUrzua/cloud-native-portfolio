@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import Navbar from "@/components/Navbar";
 import WallHolePortal from "@/components/WallHolePortal";
+import { LocaleGuard } from "@/components/LocaleGuard";
 import { locales, type Locale } from "@/lib/config";
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,6 +33,7 @@ export default async function LocaleLayout({children, params}:
   return (
     <html lang={locale} className={`${spaceGrotesk.variable} ${instrumentSans.variable} h-full antialiased`}>
       <body className="min-h-screen flex flex-col relative bg-background text-text">
+        <LocaleGuard locale={locale as Locale} />
         <Navbar locale={locale as Locale} />
         {children}
         <WallHolePortal />
