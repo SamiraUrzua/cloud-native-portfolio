@@ -86,16 +86,13 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           />
         ))}
       </div>
-
-      <section className="section-grid relative z-10 pt-8 pb-8 text-center">
+      <section className="section-grid relative text-center pt-8 pb-10">
         <h1 className="text-display col-span-full mb-8">{text.heading}</h1>
-
         <div className="col-span-full flex justify-center px-4 sm:px-6">
           <div className="w-fit max-w-[calc(100vw-2rem)] rounded-2xl bg-gradient-to-br from-accent via-transparent to-accent-secondary p-px shadow-lg sm:max-w-[calc(100vw-3rem)]">
             <div className="relative rounded-2xl bg-background/80 p-6 backdrop-blur-sm sm:p-10">
               <span className="pointer-events-none absolute left-4 top-4 h-8 w-8 rounded-tl-lg border-l border-t border-accent/70" />
               <span className="pointer-events-none absolute bottom-4 right-4 h-8 w-8 rounded-br-lg border-b border-r border-accent-secondary/70" />
-
               <div className="text-body whitespace-pre-wrap text-left text-[clamp(1rem,1.5vw,1.25rem)] leading-relaxed">
                 {text.poem}
               </div>

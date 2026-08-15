@@ -62,7 +62,7 @@ export default async function Projects({ params }: { params: Promise<{ locale: L
   return (
     <main>
       <div className="page-container">
-        <section className="section-grid pt-8 pb-24">
+        <section className="section-grid pt-8 pb-10">
           <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2 flex flex-col gap-12">
             <h1 className="text-display">{text.heading}</h1>
             <div className="flex flex-col gap-24">
