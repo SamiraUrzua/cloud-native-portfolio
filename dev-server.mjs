@@ -65,10 +65,18 @@ const server = http.createServer((req, res) => {
   const isLocalized = locales.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
+
+  if (req.method === 'GET' && isLocalized) {
+    const strippedPathname = pathname.replace(/^\/(en|es)/, '') || '/';
+    res.writeHead(302, { Location: `${strippedPathname}${url.search}` });
+    res.end();
+    return;
+  }
+
   const isNextNavigation =
     req.headers.accept?.includes('text/html') || req.headers.rsc === '1';
 
-  if (req.method === 'GET' && isNextNavigation && !isLocalized && !hasFileExtension) {
+  if (req.method === 'GET' && isNextNavigation && !hasFileExtension) {
     const normalizedPathname = pathname.endsWith('/') ? pathname : `${pathname}/`;
     const locale = getLocaleFromCookie(req.headers.cookie);
     req.url = `/${locale}${normalizedPathname}${url.search}`;
