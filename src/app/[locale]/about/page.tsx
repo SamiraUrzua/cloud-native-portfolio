@@ -7,7 +7,7 @@ const TRANSLATIONS = {
     poem: `No poem translation available yet.`,
   },
   es: {
-    heading: "Acerca de",
+    heading: "Sobre mi",
     poem: `No soy la sombra que habita en el ciberespacio
 Ni quien se oculta entre líneas de código
 No solo sé hablar con unos y ceros
@@ -19,19 +19,19 @@ Si puedo dividir un sistema en sus partes más pequeñas,
 Si puedo escribir en Python, ¿por qué no podría escribir en verso?
 
 Aprendí a tender cables para conectar humanos y máquinas
-Ahora se tender palabras para conectarme a ti
-Aprendí a escuchar a una máquina hasta que quiso escharme
-Ahora que aprendi a escuchar ya puedo escucharte a ti
+Ahora sé tender palabras para conectarme a ti
+Aprendí a escuchar a una máquina hasta que quiso escucharme
+Ahora que aprendí a escuchar puedo escucharte a ti
 
 El código no es solo ciencia y matemáticas
 el código es filosofía, es creatividad,
 la capacidad de construir cualquier mundo
 donde la única frontera es la imaginación
 
-Me rehúso a ser un estereotipo
-Yo soy más que solo números
-No me defino por un molde ni una etiqueta
-Me defino por todo lo que puedo construir`,
+Me rehúso a ser un estereotipo, a ser solo números
+A ser un engranaje más en la maquinaria de un sistema
+Quiero conectar con los demás, crear un nuevo mundo
+Y demostrar que todo es posible con un poco de imaginación`,
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
 
