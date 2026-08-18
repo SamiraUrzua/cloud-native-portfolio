@@ -40,8 +40,8 @@ export default async function Home({ params }: PageProps) {
   return (
     <main>
       <div className="page-container">
-        <section className="section-grid items-center pt-8 pb-10">
-          <div className="col-span-4 md:col-span-8 lg:col-span-6 flex flex-col justify-center gap-8 order-2 lg:order-1">
+        <section className="section-grid items-center pt-8 pb-6">
+          <div className="col-span-4 md:col-span-8 lg:col-span-5 flex flex-col justify-center gap-8">
             <div className="flex items-center gap-3">
               <span className="h-px w-8 bg-accent" />
               <span className="text-label text-accent">
