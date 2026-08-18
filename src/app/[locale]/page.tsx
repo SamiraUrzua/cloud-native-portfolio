@@ -5,13 +5,12 @@ import { type StrictTranslations } from '@/lib/localizer';
 const TRANSLATIONS = {
   en: {
     profession: "Civil Engineering in Computing and Informatics",
-    heading: "A very uwu girl *building* cool things",
-    description: "Hi, I'm Sami, a girl who really loves writing code and building cool stuff, you should hire me uwu. I like doing a lot of things, whatever I want to do I do because I'm very cool.",
+    underConstructionLabel: "Page still under construction",
+    underConstructionText: "I'm still working on the rest of the site, new things are coming soon.",
   },
   es: {
-    profession: "Ingeniería civil en computación e informática",
-    heading: "Una chica muy uwu *construyendo* cosas bien uwu",
-    description: "Hola soy Sami, una chica que le gusta mucho escribir código y hacer cosas bien cul, deberías contratarme uwu. Me gusta hacer muchas cosas, lo que quiera haceer lo hago porque soy muy cul.",
+    underConstructionLabel: "Página aún en construcción",
+    underConstructionText: "Sigo trabajando en el resto del sitio, se vienen cositas",
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
 
@@ -60,6 +59,14 @@ export default async function Home({ params }: PageProps) {
             </div>
           </div>
         </section>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pb-10">
+          <span className="text-label text-accent">
+            {text.underConstructionLabel}
+          </span>
+          <span className="text-body-muted">
+            {text.underConstructionText}
+          </span>
+        </div>
       </div>
     </main>
   );
