@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function WallHolePortal() {
   return (
     <div className="fixed bottom-0 right-0 z-50 w-80 h-80 translate-x-[4%] translate-y-[4%] origin-bottom-right scale-50 md:scale-75 lg:scale-100 pointer-events-none group">
@@ -8,13 +10,13 @@ export default function WallHolePortal() {
         <div className="absolute w-[190px] h-[190px] rounded-full bg-radial from-transparent via-emerald-500/20 to-black transition-transform duration-300 group-hover:scale-[1.55]" />
         {/* The Portal Circle */}
         <div className="absolute w-40 h-40 rounded-full overflow-hidden transition-[width,height] duration-300 group-hover:w-64 group-hover:h-64 pointer-events-auto cursor-pointer shadow-2xl">
-          <img
+          <Image
             src="/character_placeholder.png"
             alt="RPG Dimension"
+            width={320}
+            height={320}
             style={{
               position: 'absolute',
-              width: '320px',
-              height: '320px',
               maxWidth: 'none',
               objectFit: 'cover',
               left: '50%',
