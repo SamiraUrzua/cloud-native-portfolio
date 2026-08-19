@@ -18,7 +18,7 @@ const TRANSLATIONS = {
         title: 'Full-Stack Developer, Capstone Project',
         company: 'Guiñez Ingeniería Ltda.',
         period: 'March 2023 - August 2023',
-        stack: ['PySide', 'SQL'],
+        stack: ['Python', 'PySide', 'SQL'],
         points: [
           'Developed a full-stack desktop application with PySide and SQL that improved inventory management and internal operations, centralizing information and preventing errors in purchasing, stock control, and maintenance management.',
         ],
@@ -37,7 +37,7 @@ const TRANSLATIONS = {
         title: 'Software Development Internship',
         company: 'Universidad de Playa Ancha',
         period: 'October 2022 - December 2022',
-        stack: ['C++'],
+        stack: ['C++', 'SFML'],
         points: [
           'Developed a desktop application in C++ that allows students to solve math problems interactively and collects data for research in mathematics didactics.',
         ],
@@ -60,7 +60,7 @@ const TRANSLATIONS = {
         title: 'Desarrolladora Full-Stack, Proyecto Capstone',
         company: 'Guiñez Ingeniería Ltda.',
         period: 'marzo 2023 - agosto 2023',
-        stack: ['PySide', 'SQL'],
+        stack: ['Python', 'PySide', 'SQL'],
         points: [
           'Desarrolló una aplicación de escritorio full-stack con PySide y SQL que mejoró la gestión de inventario y operaciones internas, centralizando la información y evitando errores en compras, control de stock y gestión de mantenimientos.',
         ],
@@ -79,7 +79,7 @@ const TRANSLATIONS = {
         title: 'Práctica de Desarrollo de Software',
         company: 'Universidad de Playa Ancha',
         period: 'octubre 2022 - diciembre 2022',
-        stack: ['C++'],
+        stack: ['C++', 'SFML'],
         points: [
           'Desarrolló en C++ una aplicación de escritorio que permite a estudiantes resolver problemas matemáticos de forma interactiva y recopila datos para investigación en didáctica de la matemática.',
         ],
