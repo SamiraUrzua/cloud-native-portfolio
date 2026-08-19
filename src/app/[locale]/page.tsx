@@ -7,12 +7,17 @@ import { type StrictTranslations } from '@/lib/localizer';
 const TRANSLATIONS = {
   en: {
     profession: "Civil Engineering in Computing and Informatics",
+    heading: "I write code and *build* worlds",
+    description: "I'm Samira, a computer engineer and fiercely curious. When I run into a new problem, I rarely settle for simply making it work. I want to understand how it's built and what could be improved. To get there, I'm willing to dig in and learn whatever it takes. Trying, failing, figuring out why it failed, and trying again is simply the way I work.",
     underConstructionLabel: "Page still under construction",
     underConstructionText: "I'm still working on the rest of the site, new things are coming soon.",
     heroImageAlt: "Samira wearing a mixed reality headset, surrounded by virtual characters",
     heroImageCaption: "Mixed reality project",
   },
   es: {
+    profession: "Ingeniería Civil en Computación e Informática",
+    heading: "Escribo código y *construyo* mundos",
+    description: "Soy Samira, ingeniera en informática y una curiosa empedernida. Cuando encuentro un problema nuevo, rara vez me conformo con que simplemente funcione. Me gusta entender cómo está construido y qué podría hacerse mejor. Para lograrlo, estoy dispuesta a investigar y aprender lo que sea necesario. Probar, equivocarme, entender por qué falló y volver a intentarlo son parte natural de mi manera de trabajar.",
     underConstructionLabel: "Página aún en construcción",
     underConstructionText: "Sigo trabajando en el resto del sitio, se vienen cositas",
     heroImageAlt: "Samira con lentes de realidad mixta, rodeada de personajes virtuales",
