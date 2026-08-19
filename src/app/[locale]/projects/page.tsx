@@ -1,29 +1,31 @@
+import Image from 'next/image';
 import LinkButton from '@/components/LinkButton';
 import { type Locale } from '@/lib/config';
 import { type StrictTranslations } from '@/lib/localizer';
 
-const PROJECT_SLUGS = ['realidad-mixta-python', 'sistema-inventario', 'diseno-sistemas-minecraft'] as const;
+const PROJECT_SLUGS = ['mixed-reality', 'portfolio-site'] as const;
+
+const PROJECT_ASSETS: Record<typeof PROJECT_SLUGS[number], string | null> = {
+  'mixed-reality': '/mixed-reality/ARPrevious.jpg',
+  'portfolio-site': null, 
+};
 
 const TRANSLATIONS = {
   en: {
     heading: "Projects",
     projectImageLabel: "Project image",
     viewProject: "View project",
+    underConstruction: "Under construction",
     projects: {
-      'realidad-mixta-python': {
-        title: 'Mixed Reality with Python',
+      'mixed-reality': {
+        title: 'Mixed reality without specialized hardware',
         lesson:
-          'With no prior experience in artificial intelligence or OpenCV, it is possible to reach a working prototype in a month by learning as you build.',
+          'A project that kept growing in scope and features, while the code became increasingly simpler, cleaner, and more organized. From 1,000 to 2,200 lines, but with far more functionality.',
       },
-      'sistema-inventario': {
-        title: 'Full-Stack Inventory System',
+      'portfolio-site': {
+        title: 'Professional Portfolio Website',
         lesson:
-          'Centralizing information prevents errors in purchasing, stock, and maintenance: the greatest value is not always in the code, but in how the data is organized.',
-      },
-      'diseno-sistemas-minecraft': {
-        title: 'Designing Digital Systems with Minecraft',
-        lesson:
-          'A game can be a serious pedagogical tool when it is used to make an abstract concept tangible.',
+          'From zero experience with Next.js, TypeScript, and AWS to production in just one month. From design and development to infrastructure and deployment.',
       },
     },
   },
@@ -31,21 +33,17 @@ const TRANSLATIONS = {
     heading: "Proyectos",
     projectImageLabel: "Imagen del proyecto",
     viewProject: "Ver proyecto",
+    underConstruction: "En construcción",
     projects: {
-      'realidad-mixta-python': {
-        title: 'Realidad Mixta con Python',
+      'mixed-reality': {
+        title: 'Realidad mixta sin hardware especializado',
         lesson:
-          'Sin experiencia previa en inteligencia artificial ni OpenCV, es posible llegar a un prototipo funcional en un mes si se aprende haciendo.',
+          'Un proyecto que siguió creciendo en alcance y características, mientras que el código se volvía cada vez más simple, limpio y organizado. De 1.000 a 2.200 líneas, pero con infinitas mas funcionalidades.',
       },
-      'sistema-inventario': {
-        title: 'Sistema de Inventario Full-Stack',
+      'portfolio-site': {
+        title: 'Portafolio web profesional',
         lesson:
-          'Centralizar la información evita errores en compras, stock y mantenimientos: el mayor valor no siempre está en el código, sino en cómo se organizan los datos.',
-      },
-      'diseno-sistemas-minecraft': {
-        title: 'Diseño de Sistemas Digitales con Minecraft',
-        lesson:
-          'Un juego puede ser una herramienta pedagógica seria cuando se usa para hacer tangible un concepto abstracto.',
+          'De cero experiencia con Next.js, TypeScript y AWS a producción en tan solo un mes. Desde el diseño y desarrollo hasta la infraestructura y el despliegue.',
       },
     },
   },
@@ -54,8 +52,10 @@ const TRANSLATIONS = {
 export default async function Projects({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const text = TRANSLATIONS[locale];
+  
   const projects = PROJECT_SLUGS.map((slug) => ({
     slug,
+    imageSrc: PROJECT_ASSETS[slug],
     ...text.projects[slug],
   }));
 
@@ -66,32 +66,51 @@ export default async function Projects({ params }: { params: Promise<{ locale: L
           <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2 flex flex-col gap-12">
             <h1 className="text-display">{text.heading}</h1>
             <div className="flex flex-col gap-24">
-              {projects.map((project, index) => (
-                <div
-                  key={project.slug}
-                  className={`flex flex-col lg:flex-row gap-6 lg:gap-16 lg:items-center ${
-                    index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                  }`}
-                >
-                  <h2 className="text-heading text-accent w-full lg:hidden">
-                    {project.title}
-                  </h2>
-                  <div className="w-full lg:w-1/2 aspect-video rounded-lg bg-surface flex items-center justify-center shrink-0">
-                    <span className="text-label text-text-muted">{text.projectImageLabel}</span>
-                  </div>
-                  <div className="w-full lg:w-1/2 flex flex-col gap-4">
-                    <h2 className="text-heading text-accent hidden lg:block">
+              {projects.map((project, index) => {
+                const isPortfolioSite = project.slug === 'portfolio-site';
+                const projectHref = isPortfolioSite ? '/projects' : `/projects/${project.slug}`;
+                const linkLabel = isPortfolioSite ? text.underConstruction : text.viewProject;
+
+                return (
+                  <div
+                    key={project.slug}
+                    className={`flex flex-col lg:flex-row gap-6 lg:gap-16 lg:items-center ${
+                      index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+                    }`}
+                  >
+                    <h2 className="text-heading text-accent w-full lg:hidden">
                       {project.title}
                     </h2>
-                    <blockquote className="border-l-2 border-accent pl-4">
-                      <p className="text-body-muted italic">{project.lesson}</p>
-                    </blockquote>
-                    <div className="w-fit">
-                      <LinkButton href={`/projects/${project.slug}`}>{text.viewProject}</LinkButton>
+                    
+                    <div className="w-full lg:w-1/2 aspect-video rounded-lg bg-surface flex items-center justify-center shrink-0 relative overflow-hidden">
+                      {project.imageSrc ? (
+                        <Image
+                          src={project.imageSrc}
+                          alt={project.title}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-label text-text-muted">
+                          {text.projectImageLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="w-full lg:w-1/2 flex flex-col gap-4">
+                      <h2 className="text-heading text-accent hidden lg:block">
+                        {project.title}
+                      </h2>
+                      <blockquote className="border-l-2 border-accent pl-4">
+                        <p className="text-body-muted italic">{project.lesson}</p>
+                      </blockquote>
+                      <div className="w-fit">
+                        <LinkButton href={projectHref}>{linkLabel}</LinkButton>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
