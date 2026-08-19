@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import Link from 'next/link';
 import ContactCard from '@/components/ContactCard';
 import { type Locale } from '@/lib/config';
 import { type StrictTranslations } from '@/lib/localizer';
@@ -7,10 +9,14 @@ const TRANSLATIONS = {
     profession: "Civil Engineering in Computing and Informatics",
     underConstructionLabel: "Page still under construction",
     underConstructionText: "I'm still working on the rest of the site, new things are coming soon.",
+    heroImageAlt: "Samira wearing a mixed reality headset, surrounded by virtual characters",
+    heroImageCaption: "Mixed reality project",
   },
   es: {
     underConstructionLabel: "Página aún en construcción",
     underConstructionText: "Sigo trabajando en el resto del sitio, se vienen cositas",
+    heroImageAlt: "Samira con lentes de realidad mixta, rodeada de personajes virtuales",
+    heroImageCaption: "Proyecto de realidad mixta",
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
 
@@ -58,6 +64,25 @@ export default async function Home({ params }: PageProps) {
               <ContactCard locale={locale} />
             </div>
           </div>
+          <Link
+            href="/projects/mixed-reality"
+            className="col-span-4 md:col-span-8 lg:col-span-7 block mt-10 lg:mt-0 transition-transform duration-500 ease-out hover:scale-105"
+          >
+          <figure className="flex flex-col items-center lg:items-end lg:pl-12 gap-3">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+              <Image
+                src="/mixed-reality/ARPrevious.jpg"
+                alt={text.heroImageAlt}
+                fill
+                priority
+                className="object-cover opacity-80"
+              />
+            </div>
+            <figcaption className="text-label text-accent">
+              {text.heroImageCaption}
+            </figcaption>
+          </figure>
+          </Link>
         </section>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pb-10">
           <span className="text-label text-accent">
