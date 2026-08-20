@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 
 const MAP_DEFINITIONS = [
-    { key: 'SamiRPG', path: '/game-assets/SamiRPG.json' },
+    { key: 'world', path: '/game-assets/levels/world.json' },
 ];
-const START_MAP_KEY = 'SamiRPG';
+const START_MAP_KEY = 'world';
 
 interface TiledTilesetJSON {
     name: string;
