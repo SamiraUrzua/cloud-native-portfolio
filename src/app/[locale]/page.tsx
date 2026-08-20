@@ -76,7 +76,7 @@ export default async function Home({ params }: PageProps) {
           <figure className="flex flex-col items-center lg:items-end lg:pl-12 gap-3">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
               <Image
-                src="/mixed-reality/ARPrevious.jpg"
+                src="/mixed-reality/ARPrevious.webp"
                 alt={text.heroImageAlt}
                 fill
                 priority

@@ -6,7 +6,7 @@ import { type StrictTranslations } from '@/lib/localizer';
 const PROJECT_SLUGS = ['mixed-reality', 'portfolio-site'] as const;
 
 const PROJECT_ASSETS: Record<typeof PROJECT_SLUGS[number], string | null> = {
-  'mixed-reality': '/mixed-reality/ARPrevious.jpg',
+  'mixed-reality': '/mixed-reality/ARPrevious.webp',
   'portfolio-site': null, 
 };
 

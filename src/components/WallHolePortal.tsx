@@ -17,10 +17,11 @@ export default function WallHolePortal() {
         {/* The Portal Circle */}
         <div className={`absolute w-40 h-40 rounded-full overflow-hidden transition-[width,height] duration-300 pointer-events-auto cursor-pointer shadow-2xl ${isActive ? 'w-64 h-64' : 'group-hover:w-64 group-hover:h-64'}`} onMouseDown={() => setIsActive(true)} onTouchStart={() => setIsActive(true)} onTouchEnd={() => setIsActive(false)}>
           <Image
-            src="/character_placeholder.png"
+            src="/character_placeholder.webp"
             alt="RPG Dimension"
             width={320}
             height={320}
+            loading="eager"
             draggable={false}
             style={{
               position: 'absolute',
