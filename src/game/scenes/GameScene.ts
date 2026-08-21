@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Player, PLAYER_COLLIDER_RADIUS } from '@/game/entities/Player';
 import { PerformanceOverlay } from '@/game/utils/PerformanceOverlay';
 import { circleOverlapsShapes } from '@/game/world/Collision';
-import { Level } from '@/game/world/Level';
+import { Level, LevelTrigger } from '@/game/world/Level';
 
 const CAMERA_ZOOM = 4;
 const DEFAULT_SPAWN_NAME = 'Player';
@@ -49,7 +49,7 @@ export class GameScene extends Phaser.Scene {
         this.wasd = this.input.keyboard!.addKeys('W,S,A,D') as typeof this.wasd;
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
-        this.cameras.main.startFollow(this.player, true, 0.3, 0.3);
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
         this.cameras.main.setZoom(CAMERA_ZOOM);
         this.cameras.main.fadeIn(MAP_FADE_DURATION_MS);
 
@@ -63,17 +63,23 @@ export class GameScene extends Phaser.Scene {
 
         const updateStartTimestamp = performance.now();
 
+        const previousPlayerX = this.player.x;
+        const previousPlayerY = this.player.y;
         this.player.update(this.cursors, this.wasd, this.level, deltaMilliseconds);
 
-        const touchedTrigger = this.level.triggers.find((levelTrigger) =>
-            circleOverlapsShapes(
-                this.player.x,
-                this.player.y,
-                PLAYER_COLLIDER_RADIUS,
-                levelTrigger.segments,
-                levelTrigger.circles
-            )
-        );
+        const movedDistance = Math.hypot(this.player.x - previousPlayerX, this.player.y - previousPlayerY);
+        const sampleCount = Math.max(1, Math.ceil(movedDistance / PLAYER_COLLIDER_RADIUS));
+        let touchedTrigger: LevelTrigger | undefined;
+
+        for (let sampleIndex = 1; sampleIndex <= sampleCount && !touchedTrigger; sampleIndex++) {
+            const progress = sampleIndex / sampleCount;
+            const sampleX = previousPlayerX + (this.player.x - previousPlayerX) * progress;
+            const sampleY = previousPlayerY + (this.player.y - previousPlayerY) * progress;
+
+            touchedTrigger = this.level.triggers.find((levelTrigger) =>
+                circleOverlapsShapes(sampleX, sampleY, PLAYER_COLLIDER_RADIUS, levelTrigger.segments, levelTrigger.circles)
+            );
+        }
 
         if (touchedTrigger) {
             const action = touchedTrigger.action;
