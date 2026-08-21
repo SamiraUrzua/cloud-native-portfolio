@@ -11,7 +11,7 @@ const TRANSLATIONS = {
         period: 'October 2023 - present',
         stack: ['Python', 'PySide', 'OpenCV', 'PyTorch', 'CUDA', 'Depth AI', 'Linux'],
         points: [
-          'Developed a mixed reality desktop application in Python combining physical and digital environments. With no prior experience in artificial intelligence or OpenCV, reached a working prototype in a month, close to cutting-edge technologies in the field.',
+          'Developed a mixed-reality desktop application in Python combining physical and digital environments. With no prior experience in artificial intelligence or OpenCV, achieved a functional prototype within a month, comparable to cutting-edge technologies in the field.',
         ],
       },
       {
@@ -20,17 +20,17 @@ const TRANSLATIONS = {
         period: 'March 2023 - August 2023',
         stack: ['Python', 'PySide', 'SQL'],
         points: [
-          'Developed a full-stack desktop application with PySide and SQL that improved inventory management and internal operations, centralizing information and preventing errors in purchasing, stock control, and maintenance management.',
+          'Developed a full-stack desktop application using PySide and SQL that improved inventory management and internal operations. This centralized information and prevented errors in purchases, stock control, and maintenance management.',
         ],
       },
       {
-        title: 'Instructor, DeLTA UCN',
+        title: 'Teacher, DeLTA UCN',
         company: '',
         period: 'June 2022 - December 2023',
         stack: ['Teaching', 'Minecraft'],
         points: [
-          'Taught digital systems design classes using Minecraft as a pedagogical resource to facilitate hands-on learning and problem-solving.',
-          'Coordinated group activities and projects with students of different needs and learning paces, adapting activities and communicating technical concepts clearly.',
+          'Taught digital systems design using Minecraft as a pedagogical tool, allowing students to solve problems in a practical way.',
+          'Coordinated group activities and in-class projects with students who had different needs and learning paces, gaining experience in interpersonal problem-solving.',
         ],
       },
       {
@@ -39,7 +39,7 @@ const TRANSLATIONS = {
         period: 'October 2022 - December 2022',
         stack: ['C++', 'SFML'],
         points: [
-          'Developed a desktop application in C++ that allows students to solve math problems interactively and collects data for research in mathematics didactics.',
+          'Developed a desktop application in C++ that allows students to solve mathematical problems interactively and collects data for research in mathematics didactics.',
         ],
       },
     ],
