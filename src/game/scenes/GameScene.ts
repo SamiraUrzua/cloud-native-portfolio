@@ -4,7 +4,7 @@ import { PerformanceOverlay } from '@/game/utils/PerformanceOverlay';
 import { circleOverlapsShapes } from '@/game/world/Collision';
 import { Level, LevelTrigger } from '@/game/world/Level';
 
-const CAMERA_ZOOM = 4;
+const TARGET_VISIBLE_WORLD_SIDE = 300;
 const DEFAULT_SPAWN_NAME = 'Player';
 const MAP_FADE_DURATION_MS = 200;
 
@@ -50,8 +50,15 @@ export class GameScene extends Phaser.Scene {
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-        this.cameras.main.setZoom(CAMERA_ZOOM);
         this.cameras.main.fadeIn(MAP_FADE_DURATION_MS);
+
+        const applyCameraZoom = (gameSize: Phaser.Structs.Size) => {
+            const screenSide = Math.sqrt(gameSize.width * gameSize.height);
+            this.cameras.main.setZoom(Math.max(1, Math.round(screenSide / TARGET_VISIBLE_WORLD_SIDE)));
+        };
+        applyCameraZoom(this.scale.gameSize);
+        this.scale.on(Phaser.Scale.Events.RESIZE, applyCameraZoom);
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, applyCameraZoom));
 
         this.performanceOverlay = new PerformanceOverlay(this);
     }

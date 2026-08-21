@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
-import { createGameConfig, GAME_WIDTH, GAME_HEIGHT } from '@/game/config';
+import { createGameConfig } from '@/game/config';
 
 export default function SamiRPG() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +24,7 @@ export default function SamiRPG() {
     return (
         <div
             ref={containerRef}
-            style={{ width: GAME_WIDTH, height: GAME_HEIGHT }}
+            style={{ width: '100%', height: '100dvh' }}
         />
     );
 }
