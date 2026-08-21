@@ -3,15 +3,38 @@ import { type StrictTranslations } from '@/lib/localizer';
 
 const TRANSLATIONS = {
   en: {
-    heading: "About",
-    poem: `No poem translation available yet.`,
+    heading: "About me",
+    poem: `I am not the shadow that dwells in cyberspace,
+nor the one who hides between lines of code,
+I don't just know how to speak in ones and zeros,
+nor am I afraid to connect with others
+
+Some say a programmer can't have a way with words
+If I can divide a system into its smallest parts,
+why can't I condense it until I turn it into a poem?
+If I can write in Python, why can't I write in verse?
+
+I learned to carry signals between people and machines
+Now I know how to carry words to connect with you
+I learned to hear a machine until it wanted to hear me
+Now that I have learned to hear, I can hear you
+
+Code is not just science and mathematics
+Code is philosophy, it is creativity,
+the ability to build any world
+where the only limit is imagination
+
+I refuse to be a stereotype, to be mere numbers,
+to be just another small cog in the system
+I want to connect with others, to create a new world
+and to prove you can make anything with a little imagination`,
   },
   es: {
     heading: "Sobre mi",
-    poem: `No soy la sombra que habita en el ciberespacio
-Ni quien se oculta entre líneas de código
-No solo sé hablar con unos y ceros
-Ni le tengo miedo a conectar con los demás
+    poem: `No soy la sombra que habita en el ciberespacio,
+ni quien se oculta entre líneas de código,
+no solo sé hablar con unos y ceros,
+ni le tengo miedo a conectar con los demás
 
 Hay quienes dicen que un informático no puede ser de letras
 Si puedo dividir un sistema en sus partes más pequeñas,
@@ -21,17 +44,17 @@ Si puedo escribir en Python, ¿por qué no podría escribir en verso?
 Aprendí a tender cables para conectar humanos y máquinas
 Ahora sé tender palabras para conectarme a ti
 Aprendí a escuchar a una máquina hasta que quiso escucharme
-Ahora que aprendí a escuchar puedo escucharte a ti
+Ahora que aprendí a escuchar, puedo escucharte a ti
 
 El código no es solo ciencia y matemáticas
-el código es filosofía, es creatividad,
+El código es filosofía, es creatividad,
 la capacidad de construir cualquier mundo
 donde la única frontera es la imaginación
 
-Me rehúso a ser un estereotipo, a ser solo números
-A ser un engranaje más en la maquinaria de un sistema
+Me rehúso a ser un estereotipo, a ser solo números,
+a ser un engranaje más en la maquinaria de un sistema
 Quiero conectar con los demás, crear un nuevo mundo
-Y demostrar que todo es posible con un poco de imaginación`,
+y demostrar que todo es posible con un poco de imaginación`,
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
 
