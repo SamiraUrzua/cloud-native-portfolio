@@ -4,6 +4,7 @@ import { GameScene } from '@/game/scenes/GameScene';
 
 export const GAME_WIDTH = 1600;
 export const GAME_HEIGHT = 800;
+const TARGET_FRAMES_PER_SECOND = 60;
 
 export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameConfig {
     return {
@@ -14,11 +15,9 @@ export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameCon
         backgroundColor: '#1a1a2e',
         pixelArt: true,
         antialias: true,
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { x: 0, y: 0 },
-            },
+        fps: {
+            target: TARGET_FRAMES_PER_SECOND,
+            forceSetTimeOut: true,
         },
         scene: [BootScene, GameScene],
     };

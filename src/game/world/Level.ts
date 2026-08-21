@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
-import { Player } from '@/game/entities/Player';
-import { Circle, drawShapeLayer, objectLayerToCircles, objectLayerToSegments, Segment, tiledObjectToCircle, tiledObjectToSegments } from '@/game/world/TiledShapes';
+import { Circle, drawShapeLayer, objectLayerToCircles, objectLayerToSegments, rectangleToSegments, Segment, tiledObjectToCircle, tiledObjectToSegments } from '@/game/world/TiledShapes';
 
 export type LevelTriggerAction =
     | { type: 'heightLevel'; targetHeightLevel: number }
@@ -45,12 +44,13 @@ export class Level {
     readonly y0Colliders: ColliderSet;
     readonly y1Colliders: ColliderSet;
     playerDepth = 0;
-    private readonly scene: Phaser.Scene;
-    private readonly tileLayers: Phaser.Tilemaps.TilemapLayer[] = [];
-    private readonly tileColliders: Phaser.Physics.Arcade.Collider[] = [];
+    private readonly widthInTiles: number;
+    private readonly heightInTiles: number;
+    private readonly tileWidthInPixels: number;
+    private readonly tileHeightInPixels: number;
+    private readonly solidTiles: Uint8Array;
 
     constructor(scene: Phaser.Scene, mapKey: string) {
-        this.scene = scene;
         const map = scene.make.tilemap({ key: mapKey });
 
         const tilesets = map.tilesets.map((tileset) =>
@@ -65,6 +65,7 @@ export class Level {
         ) as Phaser.Tilemaps.Tileset[];
 
         const rawTiledLayers = (scene.cache.tilemap.get(mapKey).data as { layers: RawTiledLayerJSON[] }).layers;
+        const tileLayers: Phaser.Tilemaps.TilemapLayer[] = [];
         const globalColliderSegments: Segment[] = [];
         const globalColliderCircles: Circle[] = [];
         const y0ColliderSegments: Segment[] = [];
@@ -79,7 +80,7 @@ export class Level {
                     throw new Error(`Level: failed to create tile layer "${rawLayer.name}" in map "${mapKey}"`);
                 }
                 tileLayer.setDepth(layerIndex);
-                this.tileLayers.push(tileLayer);
+                tileLayers.push(tileLayer);
                 return;
             }
 
@@ -173,46 +174,61 @@ export class Level {
         };
         this.widthInPixels = map.widthInPixels;
         this.heightInPixels = map.heightInPixels;
+        this.widthInTiles = map.width;
+        this.heightInTiles = map.height;
+        this.tileWidthInPixels = map.tileWidth;
+        this.tileHeightInPixels = map.tileHeight;
+        this.solidTiles = new Uint8Array(map.width * map.height);
 
         for (let tileY = 0; tileY < map.height; tileY++) {
             for (let tileX = 0; tileX < map.width; tileX++) {
                 let anyLayerWantsCollider = false;
                 let anyLayerForbidsCollider = false;
-                const tilesRequestingCollider: Phaser.Tilemaps.Tile[] = [];
 
-                for (const tileLayer of this.tileLayers) {
+                for (const tileLayer of tileLayers) {
                     const tile = tileLayer.getTileAt(tileX, tileY);
                     if (!tile) continue;
 
                     const colliderProperty = tile.properties.collider;
                     if (colliderProperty === true) {
                         anyLayerWantsCollider = true;
-                        tilesRequestingCollider.push(tile);
                     } else if (colliderProperty === false) {
                         anyLayerForbidsCollider = true;
                     }
                 }
 
                 if (anyLayerWantsCollider && !anyLayerForbidsCollider) {
-                    tilesRequestingCollider.forEach((tile) => tile.setCollision(true, true, true, true, false));
+                    this.solidTiles[tileY * map.width + tileX] = 1;
                 }
             }
         }
-
-        this.tileLayers.forEach((tileLayer) => {
-            tileLayer.calculateFacesWithin(0, 0, map.width, map.height);
-        });
     }
 
-    collideWith(player: Player): void {
-        this.tileLayers.forEach((tileLayer) => {
-            this.tileColliders.push(this.scene.physics.add.collider(player, tileLayer));
-        });
-    }
+    getTileSegments(heightLevel: number, minX: number, minY: number, maxX: number, maxY: number): Segment[] {
+        if (heightLevel !== 0) return [];
 
-    setTileCollisionsEnabled(enabled: boolean): void {
-        this.tileColliders.forEach((tileCollider) => {
-            tileCollider.active = enabled;
-        });
+        const segments: Segment[] = [];
+        const firstTileX = Math.floor(minX / this.tileWidthInPixels);
+        const lastTileX = Math.floor(maxX / this.tileWidthInPixels);
+        const firstTileY = Math.floor(minY / this.tileHeightInPixels);
+        const lastTileY = Math.floor(maxY / this.tileHeightInPixels);
+
+        for (let tileY = firstTileY; tileY <= lastTileY; tileY++) {
+            for (let tileX = firstTileX; tileX <= lastTileX; tileX++) {
+                const isInsideMap = tileX >= 0 && tileX < this.widthInTiles && tileY >= 0 && tileY < this.heightInTiles;
+                if (isInsideMap && this.solidTiles[tileY * this.widthInTiles + tileX] === 0) continue;
+
+                segments.push(
+                    ...rectangleToSegments(
+                        tileX * this.tileWidthInPixels,
+                        tileY * this.tileHeightInPixels,
+                        this.tileWidthInPixels,
+                        this.tileHeightInPixels
+                    )
+                );
+            }
+        }
+
+        return segments;
     }
 }

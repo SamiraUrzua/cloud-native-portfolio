@@ -44,36 +44,31 @@ export class GameScene extends Phaser.Scene {
         this.player = new Player(this, spawnPoint.x, spawnPoint.y);
         this.player.heightLevel = spawnPoint.heightLevel;
         this.player.setDepth(this.level.playerDepth);
-        this.player.enablePhysics();
-        this.level.collideWith(this.player);
-        this.level.setTileCollisionsEnabled(this.player.heightLevel === 0);
 
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.wasd = this.input.keyboard!.addKeys('W,S,A,D') as typeof this.wasd;
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        this.cameras.main.startFollow(this.player, true, 0.3, 0.3);
         this.cameras.main.setZoom(CAMERA_ZOOM);
         this.cameras.main.fadeIn(MAP_FADE_DURATION_MS);
 
         this.performanceOverlay = new PerformanceOverlay(this);
     }
 
-    update(): void {
+    update(_time: number, deltaMilliseconds: number): void {
         if (this.isSwitchingMap) {
-            this.player.body.setVelocity(0, 0);
             return;
         }
 
         const updateStartTimestamp = performance.now();
 
-        const activeColliders = this.player.heightLevel === 0 ? this.level.y0Colliders : this.level.y1Colliders;
-        this.player.update(this.cursors, this.wasd, activeColliders.segments, activeColliders.circles);
+        this.player.update(this.cursors, this.wasd, this.level, deltaMilliseconds);
 
         const touchedTrigger = this.level.triggers.find((levelTrigger) =>
             circleOverlapsShapes(
-                this.player.body.center.x,
-                this.player.body.center.y,
+                this.player.x,
+                this.player.y,
                 PLAYER_COLLIDER_RADIUS,
                 levelTrigger.segments,
                 levelTrigger.circles
@@ -84,7 +79,6 @@ export class GameScene extends Phaser.Scene {
             const action = touchedTrigger.action;
             if (action.type === 'heightLevel') {
                 this.player.heightLevel = action.targetHeightLevel;
-                this.level.setTileCollisionsEnabled(this.player.heightLevel === 0);
             } else {
                 this.isSwitchingMap = true;
                 this.cameras.main.fadeOut(MAP_FADE_DURATION_MS);

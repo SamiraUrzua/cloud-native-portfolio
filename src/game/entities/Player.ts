@@ -1,67 +1,63 @@
 import Phaser from 'phaser';
 import { resolveCircleMovement } from '@/game/world/Collision';
-import { Circle, Segment } from '@/game/world/TiledShapes';
+import { Level } from '@/game/world/Level';
 
 const SPEED = 300;
 export const PLAYER_COLLIDER_RADIUS = 8;
 
 export class Player extends Phaser.GameObjects.Sprite {
-    declare body: Phaser.Physics.Arcade.Body;
-    private debugGraphics!: Phaser.GameObjects.Graphics;
+    private readonly debugGraphics: Phaser.GameObjects.Graphics;
     heightLevel = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, '');
         scene.add.existing(this);
         this.setVisible(false);
-    }
-
-    enablePhysics(): void {
-        this.scene.physics.add.existing(this);
-        this.body.setCircle(
-            PLAYER_COLLIDER_RADIUS,
-            (this.width - PLAYER_COLLIDER_RADIUS * 2) / 2,
-            (this.height - PLAYER_COLLIDER_RADIUS * 2) / 2
-        );
-        this.debugGraphics = this.scene.add.graphics();
+        this.debugGraphics = scene.add.graphics();
         this.debugGraphics.setDepth(1000);
     }
 
     update(
         cursors: Phaser.Types.Input.Keyboard.CursorKeys,
         wasd: { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key },
-        colliderSegments: Segment[],
-        colliderCircles: Circle[]
+        level: Level,
+        deltaMilliseconds: number
     ): void {
-        if (!this.body) return;
-
-        this.debugGraphics.clear();
-        this.debugGraphics.lineStyle(1, 0x00ff00, 1);
-        this.debugGraphics.strokeCircle(this.body.center.x, this.body.center.y, PLAYER_COLLIDER_RADIUS);
-
         const left = cursors.left.isDown || wasd.A.isDown;
         const right = cursors.right.isDown || wasd.D.isDown;
         const up = cursors.up.isDown || wasd.W.isDown;
         const down = cursors.down.isDown || wasd.S.isDown;
 
-        const vx = (left ? -1 : 0) + (right ? 1 : 0);
-        const vy = (up ? -1 : 0) + (down ? 1 : 0);
+        const directionX = (left ? -1 : 0) + (right ? 1 : 0);
+        const directionY = (up ? -1 : 0) + (down ? 1 : 0);
+        const directionLength = Math.hypot(directionX, directionY) || 1;
+        const distance = (SPEED * deltaMilliseconds) / 1000;
+        const displacementX = (directionX / directionLength) * distance;
+        const displacementY = (directionY / directionLength) * distance;
 
-        this.body.setVelocity(vx, vy);
-        if (vx !== 0 || vy !== 0) {
-            this.body.velocity.normalize().scale(SPEED);
-        }
-
-        const fixedTimeStep = 1 / this.scene.physics.world.fps;
-        const resolvedDisplacement = resolveCircleMovement(
-            this.body.center.x,
-            this.body.center.y,
-            PLAYER_COLLIDER_RADIUS,
-            this.body.velocity.x * fixedTimeStep,
-            this.body.velocity.y * fixedTimeStep,
-            colliderSegments,
-            colliderCircles
+        const objectColliders = this.heightLevel === 0 ? level.y0Colliders : level.y1Colliders;
+        const tileSegments = level.getTileSegments(
+            this.heightLevel,
+            Math.min(this.x, this.x + displacementX) - PLAYER_COLLIDER_RADIUS,
+            Math.min(this.y, this.y + displacementY) - PLAYER_COLLIDER_RADIUS,
+            Math.max(this.x, this.x + displacementX) + PLAYER_COLLIDER_RADIUS,
+            Math.max(this.y, this.y + displacementY) + PLAYER_COLLIDER_RADIUS
         );
-        this.body.setVelocity(resolvedDisplacement.x / fixedTimeStep, resolvedDisplacement.y / fixedTimeStep);
+
+        const resolvedDisplacement = resolveCircleMovement(
+            this.x,
+            this.y,
+            PLAYER_COLLIDER_RADIUS,
+            displacementX,
+            displacementY,
+            objectColliders.segments.concat(tileSegments),
+            objectColliders.circles
+        );
+        this.x += resolvedDisplacement.x;
+        this.y += resolvedDisplacement.y;
+
+        this.debugGraphics.clear();
+        this.debugGraphics.lineStyle(1, 0x00ff00, 1);
+        this.debugGraphics.strokeCircle(this.x, this.y, PLAYER_COLLIDER_RADIUS);
     }
 }
