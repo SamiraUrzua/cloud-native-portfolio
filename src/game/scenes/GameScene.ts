@@ -47,6 +47,7 @@ export class GameScene extends Phaser.Scene {
 
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.wasd = this.input.keyboard!.addKeys('W,S,A,D') as typeof this.wasd;
+        this.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => this.setDestinationFromPointer(pointer));
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
@@ -70,9 +71,22 @@ export class GameScene extends Phaser.Scene {
 
         const updateStartTimestamp = performance.now();
 
+        const activePointer = this.input.activePointer;
+        if (activePointer.isDown) {
+            this.setDestinationFromPointer(activePointer);
+        }
+
         const previousPlayerX = this.player.x;
         const previousPlayerY = this.player.y;
-        this.player.update(this.cursors, this.wasd, this.level, deltaMilliseconds);
+        const isMovingLeft = this.cursors.left.isDown || this.wasd.A.isDown;
+        const isMovingRight = this.cursors.right.isDown || this.wasd.D.isDown;
+        const isMovingUp = this.cursors.up.isDown || this.wasd.W.isDown;
+        const isMovingDown = this.cursors.down.isDown || this.wasd.S.isDown;
+        this.player.setMoveDirection(
+            (isMovingLeft ? -1 : 0) + (isMovingRight ? 1 : 0),
+            (isMovingUp ? -1 : 0) + (isMovingDown ? 1 : 0)
+        );
+        this.player.update(this.level, deltaMilliseconds);
 
         const movedDistance = Math.hypot(this.player.x - previousPlayerX, this.player.y - previousPlayerY);
         const sampleCount = Math.max(1, Math.ceil(movedDistance / PLAYER_COLLIDER_RADIUS));
@@ -102,5 +116,10 @@ export class GameScene extends Phaser.Scene {
         }
 
         this.performanceOverlay.recordFrame(performance.now() - updateStartTimestamp);
+    }
+
+    private setDestinationFromPointer(pointer: Phaser.Input.Pointer): void {
+        const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        this.player.moveTo(worldPoint.x, worldPoint.y);
     }
 }

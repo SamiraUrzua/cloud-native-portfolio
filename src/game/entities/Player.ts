@@ -1,13 +1,21 @@
 import Phaser from 'phaser';
-import { resolveCircleMovement } from '@/game/world/Collision';
+import { findDetourWaypoint, resolveCircleMovement } from '@/game/world/Collision';
 import { Level } from '@/game/world/Level';
 
 const SPEED = 300;
 export const PLAYER_COLLIDER_RADIUS = 8;
+const MIN_PROGRESS_DISTANCE = 0.001;
+const MAX_DETOUR_DISTANCE = 64;
+const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
+const DETOUR_SEARCH_RADIUS = PLAYER_COLLIDER_RADIUS + MAX_DETOUR_DISTANCE + DETOUR_FORWARD_DISTANCE;
 
 export class Player extends Phaser.GameObjects.Sprite {
     private readonly debugGraphics: Phaser.GameObjects.Graphics;
     heightLevel = 0;
+    private destination: { x: number; y: number } | undefined;
+    private detourWaypoint: { x: number; y: number } | undefined;
+    private moveDirectionX = 0;
+    private moveDirectionY = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, '');
@@ -17,21 +25,39 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.debugGraphics.setDepth(1000);
     }
 
-    update(
-        cursors: Phaser.Types.Input.Keyboard.CursorKeys,
-        wasd: { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key },
-        level: Level,
-        deltaMilliseconds: number
-    ): void {
-        const left = cursors.left.isDown || wasd.A.isDown;
-        const right = cursors.right.isDown || wasd.D.isDown;
-        const up = cursors.up.isDown || wasd.W.isDown;
-        const down = cursors.down.isDown || wasd.S.isDown;
+    setMoveDirection(directionX: number, directionY: number): void {
+        this.moveDirectionX = directionX;
+        this.moveDirectionY = directionY;
+        if (directionX !== 0 || directionY !== 0) {
+            this.destination = undefined;
+            this.detourWaypoint = undefined;
+        }
+    }
 
-        const directionX = (left ? -1 : 0) + (right ? 1 : 0);
-        const directionY = (up ? -1 : 0) + (down ? 1 : 0);
+    moveTo(x: number, y: number): void {
+        this.destination = { x, y };
+    }
+
+    stopMovement(): void {
+        this.destination = undefined;
+        this.detourWaypoint = undefined;
+        this.moveDirectionX = 0;
+        this.moveDirectionY = 0;
+    }
+
+    update(level: Level, deltaMilliseconds: number): void {
+        const target = this.detourWaypoint ?? this.destination;
+        let directionX = this.moveDirectionX;
+        let directionY = this.moveDirectionY;
+        let distanceToTarget = Infinity;
+        if (target) {
+            directionX = target.x - this.x;
+            directionY = target.y - this.y;
+            distanceToTarget = Math.hypot(directionX, directionY);
+        }
+
         const directionLength = Math.hypot(directionX, directionY) || 1;
-        const distance = (SPEED * deltaMilliseconds) / 1000;
+        const distance = Math.min((SPEED * deltaMilliseconds) / 1000, distanceToTarget);
         const displacementX = (directionX / directionLength) * distance;
         const displacementY = (directionY / directionLength) * distance;
 
@@ -51,10 +77,45 @@ export class Player extends Phaser.GameObjects.Sprite {
             displacementX,
             displacementY,
             objectColliders.segments.concat(tileSegments),
-            objectColliders.circles
+            objectColliders.circles,
+            this.destination !== undefined
         );
-        this.x += resolvedDisplacement.x;
-        this.y += resolvedDisplacement.y;
+        const nextX = this.x + resolvedDisplacement.x;
+        const nextY = this.y + resolvedDisplacement.y;
+        const distanceAfterMoving = target ? Math.hypot(target.x - nextX, target.y - nextY) : 0;
+
+        if (distanceToTarget - distanceAfterMoving >= MIN_PROGRESS_DISTANCE) {
+            this.x = nextX;
+            this.y = nextY;
+            if (this.detourWaypoint && distanceAfterMoving < MIN_PROGRESS_DISTANCE) {
+                this.detourWaypoint = undefined;
+            }
+        } else if (!this.detourWaypoint && distanceToTarget > DETOUR_FORWARD_DISTANCE) {
+            const detourTileSegments = level.getTileSegments(
+                this.heightLevel,
+                this.x - DETOUR_SEARCH_RADIUS,
+                this.y - DETOUR_SEARCH_RADIUS,
+                this.x + DETOUR_SEARCH_RADIUS,
+                this.y + DETOUR_SEARCH_RADIUS
+            );
+            this.detourWaypoint = findDetourWaypoint(
+                this.x,
+                this.y,
+                PLAYER_COLLIDER_RADIUS,
+                directionX / directionLength,
+                directionY / directionLength,
+                objectColliders.segments.concat(detourTileSegments),
+                objectColliders.circles,
+                MAX_DETOUR_DISTANCE,
+                DETOUR_FORWARD_DISTANCE
+            );
+            if (!this.detourWaypoint) {
+                this.destination = undefined;
+            }
+        } else {
+            this.destination = undefined;
+            this.detourWaypoint = undefined;
+        }
 
         this.debugGraphics.clear();
         this.debugGraphics.lineStyle(1, 0x00ff00, 1);

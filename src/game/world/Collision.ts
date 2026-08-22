@@ -2,6 +2,8 @@ import { Circle, closestPointOnSegment, Segment } from '@/game/world/TiledShapes
 
 const SKIN_DISTANCE = 0.05;
 const MAX_ITERATIONS = 4;
+const MIN_SLIDE_LENGTH_RATIO = 0.001;
+const CLEAR_PATH_TOLERANCE = SKIN_DISTANCE / 2;
 
 export function circleOverlapsShapes(
     centerX: number,
@@ -26,7 +28,8 @@ export function resolveCircleMovement(
     displacementX: number,
     displacementY: number,
     segments: Segment[],
-    circles: Circle[]
+    circles: Circle[],
+    preserveSpeedWhenSliding = false
 ): { x: number; y: number } {
     const broadphaseRadius = Math.hypot(displacementX, displacementY) + radius;
     const candidateSegments = segments.filter((segment) => {
@@ -146,9 +149,16 @@ export function resolveCircleMovement(
 
         remainingX *= 1 - earliestImpactTime;
         remainingY *= 1 - earliestImpactTime;
+        const lengthBeforeSlide = Math.hypot(remainingX, remainingY);
         const normalComponent = Math.min(0, remainingX * normalX + remainingY * normalY);
         remainingX -= normalComponent * normalX;
         remainingY -= normalComponent * normalY;
+
+        const slideLength = Math.hypot(remainingX, remainingY);
+        if (preserveSpeedWhenSliding && slideLength > MIN_SLIDE_LENGTH_RATIO * lengthBeforeSlide) {
+            remainingX *= lengthBeforeSlide / slideLength;
+            remainingY *= lengthBeforeSlide / slideLength;
+        }
 
         const opposesOriginalDisplacement = remainingX * displacementX + remainingY * displacementY < 0;
         if (
@@ -162,4 +172,39 @@ export function resolveCircleMovement(
     }
 
     return { x: positionX - startX, y: positionY - startY };
+}
+
+export function findDetourWaypoint(
+    startX: number,
+    startY: number,
+    radius: number,
+    directionX: number,
+    directionY: number,
+    segments: Segment[],
+    circles: Circle[],
+    maxSideDistance: number,
+    forwardDistance: number
+): { x: number; y: number } | undefined {
+    for (let sideDistance = radius; sideDistance <= maxSideDistance; sideDistance += radius) {
+        for (const side of [1, -1]) {
+            const sideOffsetX = -directionY * side * sideDistance;
+            const sideOffsetY = directionX * side * sideDistance;
+            const forwardOffsetX = directionX * forwardDistance;
+            const forwardOffsetY = directionY * forwardDistance;
+            const waypointX = startX + sideOffsetX;
+            const waypointY = startY + sideOffsetY;
+
+            const resolvedSideStep = resolveCircleMovement(startX, startY, radius, sideOffsetX, sideOffsetY, segments, circles);
+            const resolvedForwardStep = resolveCircleMovement(waypointX, waypointY, radius, forwardOffsetX, forwardOffsetY, segments, circles);
+
+            if (
+                Math.hypot(resolvedSideStep.x - sideOffsetX, resolvedSideStep.y - sideOffsetY) < CLEAR_PATH_TOLERANCE &&
+                Math.hypot(resolvedForwardStep.x - forwardOffsetX, resolvedForwardStep.y - forwardOffsetY) < CLEAR_PATH_TOLERANCE
+            ) {
+                return { x: waypointX, y: waypointY };
+            }
+        }
+    }
+
+    return undefined;
 }
