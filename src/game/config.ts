@@ -18,7 +18,6 @@ export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameCon
         antialias: true,
         fps: {
             target: TARGET_FRAMES_PER_SECOND,
-            forceSetTimeOut: true,
         },
         scene: [BootScene, GameScene],
     };
