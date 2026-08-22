@@ -32,6 +32,7 @@ export class PerformanceOverlay {
         });
         document.body.appendChild(this.element);
         scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.element.remove());
+        scene.events.once(Phaser.Scenes.Events.DESTROY, () => this.element.remove());
     }
 
     recordFrame(updateDurationMs: number): void {
