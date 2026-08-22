@@ -28,7 +28,8 @@ interface RawTiledLayerJSON {
     color?: string;
 }
 
-const DEBUG_SHAPE_LAYERS: Record<string, boolean> = {
+const DEBUG_LAYERS: Record<string, boolean> = {
+    "FloorCollider": true,
     "Y1Colliders": true,
     "Triggers": true,
     "Colliders": true,
@@ -80,6 +81,7 @@ export class Level {
                     throw new Error(`Level: failed to create tile layer "${rawLayer.name}" in map "${mapKey}"`);
                 }
                 tileLayer.setDepth(layerIndex);
+                tileLayer.setVisible(DEBUG_LAYERS[rawLayer.name] ?? true);
                 tileLayers.push(tileLayer);
                 return;
             }
@@ -152,7 +154,7 @@ export class Level {
                 spritesForGid.forEach((sprite) => (sprite as Phaser.GameObjects.Sprite).setDepth(layerIndex));
             });
 
-            if (DEBUG_SHAPE_LAYERS[layerName] && objects.length > 0) {
+            if (DEBUG_LAYERS[layerName] && objects.length > 0) {
                 const shapeGraphics = scene.add.graphics();
                 shapeGraphics.setDepth(layerIndex);
                 drawShapeLayer(shapeGraphics, {
