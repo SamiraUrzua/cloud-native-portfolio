@@ -9,18 +9,48 @@ const MAX_DETOUR_DISTANCE = 64;
 const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
 const DETOUR_SEARCH_RADIUS = PLAYER_COLLIDER_RADIUS + MAX_DETOUR_DISTANCE + DETOUR_FORWARD_DISTANCE;
 
+const FACING_DIRECTIONS = ['up', 'left', 'down', 'right'];
+const WALK_CYCLE_DISTANCE = 80;
+const MIN_WALKING_SPEED = SPEED / 10;
+const SKIPPED_LEADING_FRAMES: Record<string, number> = { idle: 0, walk: 1 };
+
 export class Player extends Phaser.GameObjects.Sprite {
     private readonly debugGraphics: Phaser.GameObjects.Graphics;
     heightLevel = 0;
+    private facingDirection = 'down';
     private destination: { x: number; y: number } | undefined;
     private detourWaypoint: { x: number; y: number } | undefined;
     private moveDirectionX = 0;
     private moveDirectionY = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, x, y, '');
+        super(scene, x, y, 'player-idle', 0);
         scene.add.existing(this);
-        this.setVisible(false);
+        const SPRITE_SCALE = 0.5;
+        this.setScale(SPRITE_SCALE);
+        this.setDisplayOrigin(
+            this.width / 2,
+            this.height - PLAYER_COLLIDER_RADIUS / SPRITE_SCALE
+        );
+
+        Object.entries(SKIPPED_LEADING_FRAMES).forEach(([animationName, skippedLeadingFrames]) => {
+            const textureKey = `player-${animationName}`;
+            const framesPerRow = (scene.textures.get(textureKey).frameTotal - 1) / FACING_DIRECTIONS.length;
+            FACING_DIRECTIONS.forEach((direction, rowIndex) => {
+                const animationKey = `${textureKey}-${direction}`;
+                if (scene.anims.exists(animationKey)) return;
+                scene.anims.create({
+                    key: animationKey,
+                    frames: scene.anims.generateFrameNumbers(textureKey, {
+                        start: rowIndex * framesPerRow + skippedLeadingFrames,
+                        end: rowIndex * framesPerRow + framesPerRow - 1,
+                    }),
+                    frameRate: framesPerRow - skippedLeadingFrames,
+                    repeat: -1,
+                });
+            });
+        });
+
         this.debugGraphics = scene.add.graphics();
         this.debugGraphics.setDepth(1000);
     }
@@ -46,6 +76,8 @@ export class Player extends Phaser.GameObjects.Sprite {
     }
 
     update(level: Level, deltaMilliseconds: number): void {
+        const previousX = this.x;
+        const previousY = this.y;
         const target = this.detourWaypoint ?? this.destination;
         let directionX = this.moveDirectionX;
         let directionY = this.moveDirectionY;
@@ -116,6 +148,25 @@ export class Player extends Phaser.GameObjects.Sprite {
             this.destination = undefined;
             this.detourWaypoint = undefined;
         }
+
+        const movedX = this.x - previousX;
+        const movedY = this.y - previousY;
+        const isWalking = Math.hypot(movedX, movedY) / (deltaMilliseconds / 1000) > MIN_WALKING_SPEED;
+        const isUsingKeyboard = this.moveDirectionX !== 0 || this.moveDirectionY !== 0;
+        if (isUsingKeyboard || isWalking) {
+            const facingX = isUsingKeyboard ? this.moveDirectionX : movedX;
+            const facingY = isUsingKeyboard ? this.moveDirectionY : movedY;
+            this.facingDirection =
+                Math.abs(facingY) > Math.abs(facingX) * 1.1
+                    ? facingY < 0
+                        ? 'up'
+                        : 'down'
+                    : facingX < 0
+                      ? 'left'
+                      : 'right';
+        }
+        this.play(`player-${isWalking ? 'walk' : 'idle'}-${this.facingDirection}`, true);
+        this.anims.timeScale = isWalking ? SPEED / WALK_CYCLE_DISTANCE : 1;
 
         this.debugGraphics.clear();
         this.debugGraphics.lineStyle(1, 0x00ff00, 1);

@@ -4,6 +4,11 @@ const MAP_DEFINITIONS = [
     { key: 'world', path: '/game-assets/levels/world.json' },
 ];
 const START_MAP_KEY = 'world';
+const PLAYER_SPRITESHEETS = [
+    { key: 'player-idle', path: '/game-assets/characters/main/idle.png' },
+    { key: 'player-walk', path: '/game-assets/characters/main/walk.png' },
+];
+const PLAYER_FRAME_SIZE = 64;
 
 interface TiledTilesetJSON {
     name: string;
@@ -25,6 +30,13 @@ export class BootScene extends Phaser.Scene {
 
     preload(): void {
         const queuedTilesetNames = new Set<string>();
+
+        PLAYER_SPRITESHEETS.forEach((playerSpritesheet) => {
+            this.load.spritesheet(playerSpritesheet.key, playerSpritesheet.path, {
+                frameWidth: PLAYER_FRAME_SIZE,
+                frameHeight: PLAYER_FRAME_SIZE,
+            });
+        });
 
         MAP_DEFINITIONS.forEach((mapDefinition) => {
             this.load.tilemapTiledJSON(mapDefinition.key, mapDefinition.path);
