@@ -1,13 +1,19 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function WallHolePortal() {
   const [isActive, setIsActive] = useState(false);
 
+  useEffect(() => {
+    if (!isActive) return;
+    const autoCloseTimeoutId = setTimeout(() => setIsActive(false), 2000);
+    return () => clearTimeout(autoCloseTimeoutId);
+  }, [isActive]);
+
   return (
-    <div className="fixed bottom-0 right-0 z-50 w-80 h-80 translate-x-[4%] translate-y-[4%] origin-bottom-right scale-50 md:scale-75 lg:scale-100 pointer-events-none group" style={{ userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }} onMouseLeave={() => setIsActive(false)}>
+    <div className="fixed bottom-0 right-0 z-50 w-80 h-80 translate-x-[4%] translate-y-[4%] origin-bottom-right scale-50 md:scale-75 lg:scale-100 pointer-events-none group" style={{ userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
       <div className="relative w-full h-full flex items-center justify-center">
         <div className={`absolute inset-0 rounded-full bg-black/50 opacity-0 transition-opacity duration-300 pointer-events-none ${isActive ? 'opacity-100' : 'group-hover:opacity-100'}`} />
         {/* Outer Glow */}
@@ -15,7 +21,7 @@ export default function WallHolePortal() {
         {/* Inner Glow */}
         <div className="absolute w-[190px] h-[190px] rounded-full bg-radial from-transparent via-emerald-500/20 to-black transition-transform duration-300 group-hover:scale-[1.55]" />
         {/* The Portal Circle */}
-        <div className={`absolute w-40 h-40 rounded-full overflow-hidden transition-[width,height] duration-300 pointer-events-auto cursor-pointer shadow-2xl ${isActive ? 'w-64 h-64' : 'group-hover:w-64 group-hover:h-64'}`} onMouseDown={() => setIsActive(true)} onTouchStart={() => setIsActive(true)} onTouchEnd={() => setIsActive(false)}>
+        <div className={`absolute w-40 h-40 rounded-full overflow-hidden transition-[width,height] duration-300 pointer-events-auto cursor-pointer shadow-2xl ${isActive ? 'w-64 h-64' : 'group-hover:w-64 group-hover:h-64'}`} onPointerUp={(event) => event.pointerType === 'touch' && setIsActive((previousIsActive) => !previousIsActive)}>
           <Image
             src="/character_placeholder.webp"
             alt="RPG Dimension"
