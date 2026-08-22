@@ -48,6 +48,7 @@ export class GameScene extends Phaser.Scene {
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.wasd = this.input.keyboard!.addKeys('W,S,A,D') as typeof this.wasd;
         this.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => this.setDestinationFromPointer(pointer));
+        this.input.on(Phaser.Input.Events.POINTER_UP, () => this.player.stopMovement());
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
