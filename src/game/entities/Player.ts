@@ -3,7 +3,7 @@ import { findDetourWaypoint, resolveCircleMovement } from '@/game/world/Collisio
 import { Level } from '@/game/world/Level';
 
 const SPEED = 300;
-export const PLAYER_COLLIDER_RADIUS = 8;
+export const PLAYER_COLLIDER_RADIUS = 8-0.1;
 const MIN_PROGRESS_DISTANCE = 0.001;
 const MAX_DETOUR_DISTANCE = 64;
 const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
@@ -30,7 +30,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.setScale(SPRITE_SCALE);
         this.setDisplayOrigin(
             this.width / 2,
-            this.height - PLAYER_COLLIDER_RADIUS / SPRITE_SCALE
+            this.height - PLAYER_COLLIDER_RADIUS / SPRITE_SCALE + 8
         );
 
         Object.entries(SKIPPED_LEADING_FRAMES).forEach(([animationName, skippedLeadingFrames]) => {
