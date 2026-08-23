@@ -52,9 +52,7 @@ export class GameScene extends Phaser.Scene {
         });
         const releasePointerMovement = () => {
             this.isPointerHoldingMovement = false;
-            this.player.stopMovement();
         };
-        this.input.on(Phaser.Input.Events.POINTER_UP, releasePointerMovement);
 
         const releaseWhenNoButtonIsPressed = (event: PointerEvent) => {
             if (event.buttons === 0) releasePointerMovement();
@@ -90,15 +88,17 @@ export class GameScene extends Phaser.Scene {
         const updateStartTimestamp = performance.now();
         const { activePointer } = this.input;
 
-        if (this.isPointerHoldingMovement && activePointer.isDown) {
-            const worldPoint = this.cameras.main.getWorldPoint(activePointer.x, activePointer.y);
-            this.player.moveTo(worldPoint.x, worldPoint.y);
-        }
+        const keyboardDirectionX =
+            Number(this.keys.D.isDown || this.keys.RIGHT.isDown) - Number(this.keys.A.isDown || this.keys.LEFT.isDown);
+        const keyboardDirectionY =
+            Number(this.keys.S.isDown || this.keys.DOWN.isDown) - Number(this.keys.W.isDown || this.keys.UP.isDown);
 
-        this.player.setMoveDirection(
-            Number(this.keys.D.isDown || this.keys.RIGHT.isDown) - Number(this.keys.A.isDown || this.keys.LEFT.isDown),
-            Number(this.keys.S.isDown || this.keys.DOWN.isDown) - Number(this.keys.W.isDown || this.keys.UP.isDown)
-        );
+        if (this.isPointerHoldingMovement && keyboardDirectionX === 0 && keyboardDirectionY === 0) {
+            const worldPoint = this.cameras.main.getWorldPoint(activePointer.x, activePointer.y);
+            this.player.setMoveDirection(worldPoint.x - this.player.x, worldPoint.y - this.player.y, true);
+        } else {
+            this.player.setMoveDirection(keyboardDirectionX, keyboardDirectionY);
+        }
         this.player.update(this.level, deltaMilliseconds);
         this.playerColliderDebugGraphics?.clear().lineStyle(1, 0x00ff00, 1).strokeCircle(this.player.x, this.player.y, PLAYER_COLLIDER_RADIUS);
 
