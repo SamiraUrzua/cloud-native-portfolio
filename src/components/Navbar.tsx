@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import CopyButton from "@/components/CopyButton";
 import { siteConfig, locales, type Locale } from "@/lib/config";
 
@@ -28,9 +29,9 @@ const NAV_LINKS = [
   { href: "/about", key: "about" },
 ] as const;
 
-const LOCALE_METADATA: Record<Locale, { emoji: string; label: string }> = {
-  en: { emoji: "🇬🇧", label: "English" },
-  es: { emoji: "🇪🇸", label: "Español" },
+const LOCALE_METADATA: Record<Locale, { flagSrc: string; label: string }> = {
+  en: { flagSrc: "/flags/gb.webp", label: "English" },
+  es: { flagSrc: "/flags/es.webp", label: "Español" },
 };
 
 function LanguageToggle({ locale }: { locale: Locale }) {
@@ -48,11 +49,18 @@ function LanguageToggle({ locale }: { locale: Locale }) {
           type="button"
           onClick={() => changeLanguage(l)}
           aria-label={LOCALE_METADATA[l].label}
-          className={`text-2xl leading-none transition-all duration-200 hover:scale-110 ${
+          aria-pressed={locale === l}
+          className={`block leading-none transition-all duration-200 hover:scale-110 ${
             locale === l ? "opacity-100" : "opacity-50 hover:opacity-100"
           }`}
         >
-          {LOCALE_METADATA[l].emoji}
+          <Image
+            src={LOCALE_METADATA[l].flagSrc}
+            alt=""
+            width={32}
+            height={24}
+            className="h-6 w-8 rounded-sm object-cover"
+          />
         </button>
       ))}
     </div>
