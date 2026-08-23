@@ -1,11 +1,6 @@
 import { type Locale } from '@/lib/config';
 import { type StrictTranslations } from '@/lib/localizer';
-
-type ContentBlock =
-  | { type: 'text'; heading?: string; body: string }
-  | { type: 'pullquote'; text: string }
-  | { type: 'image'; src: string; caption?: string; size?: 'large' | 'default' }
-  | { type: 'video'; src: string; caption?: string };
+import { ArticleContent } from '@/components/ArticleContent';
 
 const TRANSLATIONS = {
   en: {
@@ -72,97 +67,16 @@ export default async function MixedReality({ params }: PageProps) {
     <main>
       <div className="page-container">
         <section className="section-grid pt-8 pb-10">
-          <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2 flex flex-col gap-8">
+          <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2">
             <h1 className="text-display">
               {text.heading}
             </h1>
-
-            <p className="text-body">
-              {text.summary}
-            </p>
           </div>
         </section>
 
         <section className="section-grid pb-16">
           <div className="col-span-4 md:col-span-7 md:col-start-2 lg:col-span-10 lg:col-start-2 flex flex-col">
-            {text.blocks.map((block, index) => {
-              if (block.type === 'text') {
-                return (
-                  <div key={index} className="flex flex-col gap-4 pb-8">
-                    {block.heading && (
-                      <h2 className="text-heading pb-2">
-                        {block.heading}
-                      </h2>
-                    )}
-
-                    {block.body.split('\n\n').map((paragraph, paragraphIndex) => (
-                      <p key={paragraphIndex} className="text-body">
-                        {renderAccent(paragraph)}
-                      </p>
-                    ))}
-                  </div>
-                );
-              }
-
-              if (block.type === 'pullquote') {
-                return (
-                  <blockquote
-                    key={index}
-                    className="border-l-2 border-accent pl-6 py-2 mb-8"
-                  >
-                    <p className="text-heading text-accent">
-                      {block.text}
-                    </p>
-                  </blockquote>
-                );
-              }
-
-              if (block.type === 'image') {
-                if (!block.src) return null;
-
-                return (
-                  <figure
-                    key={index}
-                    className={`mx-auto flex flex-col items-center gap-2 py-8 ${
-                      block.size === 'large' ? 'max-w-2xl' : 'max-w-md'
-                    }`}
-                  >
-                    <img
-                      src={block.src}
-                      alt={block.caption ?? ''}
-                      className="w-full rounded-lg"
-                    />
-
-                    {block.caption && (
-                      <figcaption className="text-body-muted text-sm text-center">
-                        {block.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                );
-              }
-
-              if (!block.src) return null;
-
-              return (
-                <figure
-                  key={index}
-                  className="flex flex-col gap-2 py-8"
-                >
-                  <video
-                    src={block.src}
-                    controls
-                    className="w-full rounded-lg"
-                  />
-
-                  {block.caption && (
-                    <figcaption className="text-body-muted text-sm">
-                      {block.caption}
-                    </figcaption>
-                  )}
-                </figure>
-              );
-            })}
+            <ArticleContent content={text.content} />
           </div>
         </section>
       </div>
