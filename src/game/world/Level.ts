@@ -85,6 +85,39 @@ export class Level {
             Y1Colliders: [this.y1Colliders],
         };
 
+        const sideColliderRectangles: Record<string, (tileLeft: number, tileTop: number, size: number) => number[]> = {
+            leftcollider: (tileLeft, tileTop, size) => [tileLeft, tileTop, size, map.tileHeight],
+            rightcollider: (tileLeft, tileTop, size) => [tileLeft + map.tileWidth - size, tileTop, size, map.tileHeight],
+            upcollider: (tileLeft, tileTop, size) => [tileLeft, tileTop, map.tileWidth, size],
+            downcollider: (tileLeft, tileTop, size) => [tileLeft, tileTop + map.tileHeight - size, map.tileWidth, size],
+        };
+
+        const collidersLayerObjects = map.getObjectLayer('Colliders')?.objects;
+        if (collidersLayerObjects) {
+            rawTiledLayers
+                .filter((rawLayer) => rawLayer.type === 'objectgroup')
+                .forEach((rawLayer) => {
+                    map.getObjectLayer(rawLayer.name)!.objects.forEach((tileObject) => {
+                        const tileGid = tileObject.gid;
+                        if (tileGid === undefined) return;
+
+                        const tilesetProperties = map.tilesets
+                            .find((candidateTileset) => candidateTileset.containsTileIndex(tileGid))
+                            ?.getTileProperties(tileGid) as Record<string, unknown> | null | undefined;
+                        const tileLeft = Math.floor((tileObject.x ?? 0) / map.tileWidth) * map.tileWidth;
+                        const tileTop = (Math.ceil((tileObject.y ?? 0) / map.tileHeight) - 1) * map.tileHeight;
+
+                        Object.entries(sideColliderRectangles).forEach(([propertyName, createRectangle]) => {
+                            const size = getTiledProperty(tileObject, propertyName) ?? tilesetProperties?.[propertyName];
+                            if (typeof size !== 'number') return;
+
+                            const [x, y, width, height] = createRectangle(tileLeft, tileTop, size);
+                            collidersLayerObjects.push({ x, y, width, height, visible: true } as Phaser.Types.Tilemaps.TiledObject);
+                        });
+                    });
+                });
+        }
+
         rawTiledLayers.forEach((rawLayer, layerIndex) => {
             const layerName = rawLayer.name;
             this.layerIndexByName.set(layerName, layerIndex);
