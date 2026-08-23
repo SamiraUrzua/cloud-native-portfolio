@@ -1,46 +1,51 @@
 import { Circle, closestPointOnSegment, Segment } from '@/game/world/TiledShapes';
 
+export const PLAYER_COLLIDER_RADIUS = 8 - 0.1;
+const MAX_DETOUR_DISTANCE = 64;
+export const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
+export const DETOUR_SEARCH_RADIUS = PLAYER_COLLIDER_RADIUS + MAX_DETOUR_DISTANCE + DETOUR_FORWARD_DISTANCE;
 const SKIN_DISTANCE = 0.05;
 const MAX_ITERATIONS = 4;
 const MIN_SLIDE_LENGTH_RATIO = 0.001;
 const CLEAR_PATH_TOLERANCE = SKIN_DISTANCE / 2;
 
-export function circleOverlapsShapes(
-    centerX: number,
-    centerY: number,
-    radius: number,
-    segments: Segment[],
-    circles: Circle[]
-): boolean {
+export function circleOverlapsShapes(centerX: number, centerY: number, segments: Segment[], circles: Circle[]): boolean {
     return (
         segments.some((segment) => {
             const closestPoint = closestPointOnSegment(centerX, centerY, segment);
-            return Math.hypot(closestPoint.x - centerX, closestPoint.y - centerY) <= radius;
+            return Math.hypot(closestPoint.x - centerX, closestPoint.y - centerY) <= PLAYER_COLLIDER_RADIUS;
         }) ||
-        circles.some((circle) => Math.hypot(circle.x - centerX, circle.y - centerY) <= circle.radius + radius)
+        circles.some(
+            (circle) => Math.hypot(circle.x - centerX, circle.y - centerY) <= circle.radius + PLAYER_COLLIDER_RADIUS
+        )
     );
 }
 
 export function resolveCircleMovement(
     startX: number,
     startY: number,
-    radius: number,
     displacementX: number,
     displacementY: number,
     segments: Segment[],
     circles: Circle[],
     preserveSpeedWhenSliding = false
 ): { x: number; y: number } {
-    const broadphaseRadius = Math.hypot(displacementX, displacementY) + radius;
+    const broadphaseRadius = Math.hypot(displacementX, displacementY) + PLAYER_COLLIDER_RADIUS;
     const candidateSegments = segments.filter((segment) => {
         const closestPoint = closestPointOnSegment(startX, startY, segment);
         return Math.hypot(closestPoint.x - startX, closestPoint.y - startY) <= broadphaseRadius;
     });
-    const candidateCircles = circles.filter(
-        (circle) => Math.hypot(circle.x - startX, circle.y - startY) - circle.radius <= broadphaseRadius
-    );
+    const obstacleCircles = [
+        ...circles.filter(
+            (circle) => Math.hypot(circle.x - startX, circle.y - startY) - circle.radius <= broadphaseRadius
+        ),
+        ...candidateSegments.flatMap((segment) => [
+            { x: segment.x1, y: segment.y1, radius: 0 },
+            { x: segment.x2, y: segment.y2, radius: 0 },
+        ]),
+    ];
 
-    const recordedNormals: { x: number; y: number }[] = [];
+    const constraintDirections = [{ x: displacementX, y: displacementY }];
     let positionX = startX;
     let positionY = startY;
     let remainingX = displacementX;
@@ -50,105 +55,65 @@ export function resolveCircleMovement(
         const remainingLength = Math.hypot(remainingX, remainingY);
         if (remainingLength === 0) break;
 
-        let earliestImpactTime = Infinity;
-        let hitSegment: Segment | undefined;
-        let hitCircle: Circle | undefined;
+        const impacts: { time: number; obstacle: Segment | Circle }[] = [];
 
         for (const segment of candidateSegments) {
-            const segmentDeltaX = segment.x2 - segment.x1;
-            const segmentDeltaY = segment.y2 - segment.y1;
-            const segmentLength = Math.hypot(segmentDeltaX, segmentDeltaY);
-            const impactTimes: number[] = [];
+            const segmentLength = Math.hypot(segment.x2 - segment.x1, segment.y2 - segment.y1);
+            const directionX = (segment.x2 - segment.x1) / segmentLength;
+            const directionY = (segment.y2 - segment.y1) / segmentLength;
+            const faceNormalX = -directionY;
+            const faceNormalY = directionX;
+            const signedDistance = (positionX - segment.x1) * faceNormalX + (positionY - segment.y1) * faceNormalY;
+            const side = signedDistance < 0 ? -1 : 1;
+            const approachSpeed = -side * (remainingX * faceNormalX + remainingY * faceNormalY);
+            if (approachSpeed <= 0) continue;
 
-            if (segmentLength > 0) {
-                const directionX = segmentDeltaX / segmentLength;
-                const directionY = segmentDeltaY / segmentLength;
-
-                for (const side of [1, -1]) {
-                    const sideNormalX = -directionY * side;
-                    const sideNormalY = directionX * side;
-                    const startDistance = (positionX - segment.x1) * sideNormalX + (positionY - segment.y1) * sideNormalY;
-                    const approachSpeed = -(remainingX * sideNormalX + remainingY * sideNormalY);
-                    if (startDistance < 0 || approachSpeed <= 0) continue;
-
-                    const impactTime = Math.max(0, (startDistance - radius) / approachSpeed);
-                    const distanceAlongSegment =
-                        (positionX + remainingX * impactTime - segment.x1) * directionX +
-                        (positionY + remainingY * impactTime - segment.y1) * directionY;
-                    if (distanceAlongSegment >= 0 && distanceAlongSegment <= segmentLength) {
-                        impactTimes.push(impactTime);
-                    }
-                }
-            }
-
-            for (const endpoint of [{ x: segment.x1, y: segment.y1 }, { x: segment.x2, y: segment.y2 }]) {
-                const offsetX = positionX - endpoint.x;
-                const offsetY = positionY - endpoint.y;
-                const halfLinearCoefficient = offsetX * remainingX + offsetY * remainingY;
-                if (halfLinearCoefficient >= 0) continue;
-
-                const quadraticCoefficient = remainingLength * remainingLength;
-                const constantCoefficient = offsetX * offsetX + offsetY * offsetY - radius * radius;
-                const discriminant = halfLinearCoefficient * halfLinearCoefficient - quadraticCoefficient * constantCoefficient;
-                if (discriminant < 0) continue;
-
-                impactTimes.push(
-                    constantCoefficient <= 0
-                        ? 0
-                        : (-halfLinearCoefficient - Math.sqrt(discriminant)) / quadraticCoefficient
-                );
-            }
-
-            const segmentImpactTime = Math.min(...impactTimes);
-            if (segmentImpactTime <= 1 && segmentImpactTime < earliestImpactTime) {
-                earliestImpactTime = segmentImpactTime;
-                hitSegment = segment;
-                hitCircle = undefined;
+            const impactTime = Math.max(0, (Math.abs(signedDistance) - PLAYER_COLLIDER_RADIUS) / approachSpeed);
+            const distanceAlongSegment =
+                (positionX + remainingX * impactTime - segment.x1) * directionX +
+                (positionY + remainingY * impactTime - segment.y1) * directionY;
+            if (distanceAlongSegment >= 0 && distanceAlongSegment <= segmentLength) {
+                impacts.push({ time: impactTime, obstacle: segment });
             }
         }
 
-        for (const circle of candidateCircles) {
+        for (const circle of obstacleCircles) {
             const offsetX = positionX - circle.x;
             const offsetY = positionY - circle.y;
             const halfLinearCoefficient = offsetX * remainingX + offsetY * remainingY;
             if (halfLinearCoefficient >= 0) continue;
 
-            const combinedRadius = circle.radius + radius;
+            const combinedRadius = circle.radius + PLAYER_COLLIDER_RADIUS;
             const quadraticCoefficient = remainingLength * remainingLength;
             const constantCoefficient = offsetX * offsetX + offsetY * offsetY - combinedRadius * combinedRadius;
             const discriminant = halfLinearCoefficient * halfLinearCoefficient - quadraticCoefficient * constantCoefficient;
             if (discriminant < 0) continue;
 
-            const circleImpactTime =
-                constantCoefficient <= 0
-                    ? 0
-                    : (-halfLinearCoefficient - Math.sqrt(discriminant)) / quadraticCoefficient;
-            if (circleImpactTime <= 1 && circleImpactTime < earliestImpactTime) {
-                earliestImpactTime = circleImpactTime;
-                hitSegment = undefined;
-                hitCircle = circle;
-            }
+            impacts.push({
+                time: Math.max(0, (-halfLinearCoefficient - Math.sqrt(discriminant)) / quadraticCoefficient),
+                obstacle: circle,
+            });
         }
 
-        if (!hitSegment && !hitCircle) {
+        const earliestImpact = impacts.filter(({ time }) => time <= 1).sort((a, b) => a.time - b.time)[0];
+        if (!earliestImpact) {
             positionX += remainingX;
             positionY += remainingY;
             break;
         }
 
-        const travelDistance = Math.max(0, remainingLength * earliestImpactTime - SKIN_DISTANCE);
+        const { time, obstacle } = earliestImpact;
+        const travelDistance = Math.max(0, remainingLength * time - SKIN_DISTANCE);
         positionX += (remainingX / remainingLength) * travelDistance;
         positionY += (remainingY / remainingLength) * travelDistance;
 
-        const closestPoint = hitCircle ?? closestPointOnSegment(positionX, positionY, hitSegment!);
+        const closestPoint = 'radius' in obstacle ? obstacle : closestPointOnSegment(positionX, positionY, obstacle);
         const normalLength = Math.hypot(positionX - closestPoint.x, positionY - closestPoint.y);
-        if (normalLength === 0) break;
-
         const normalX = (positionX - closestPoint.x) / normalLength;
         const normalY = (positionY - closestPoint.y) / normalLength;
 
-        remainingX *= 1 - earliestImpactTime;
-        remainingY *= 1 - earliestImpactTime;
+        remainingX *= 1 - time;
+        remainingY *= 1 - time;
         const lengthBeforeSlide = Math.hypot(remainingX, remainingY);
         const normalComponent = Math.min(0, remainingX * normalX + remainingY * normalY);
         remainingX -= normalComponent * normalX;
@@ -160,15 +125,11 @@ export function resolveCircleMovement(
             remainingY *= lengthBeforeSlide / slideLength;
         }
 
-        const opposesOriginalDisplacement = remainingX * displacementX + remainingY * displacementY < 0;
-        if (
-            opposesOriginalDisplacement ||
-            recordedNormals.some((recordedNormal) => remainingX * recordedNormal.x + remainingY * recordedNormal.y < 0)
-        ) {
+        if (constraintDirections.some((direction) => remainingX * direction.x + remainingY * direction.y < 0)) {
             remainingX = 0;
             remainingY = 0;
         }
-        recordedNormals.push({ x: normalX, y: normalY });
+        constraintDirections.push({ x: normalX, y: normalY });
     }
 
     return { x: positionX - startX, y: positionY - startY };
@@ -177,29 +138,33 @@ export function resolveCircleMovement(
 export function findDetourWaypoint(
     startX: number,
     startY: number,
-    radius: number,
     directionX: number,
     directionY: number,
     segments: Segment[],
-    circles: Circle[],
-    maxSideDistance: number,
-    forwardDistance: number
+    circles: Circle[]
 ): { x: number; y: number } | undefined {
-    for (let sideDistance = radius; sideDistance <= maxSideDistance; sideDistance += radius) {
+    const forwardOffsetX = directionX * DETOUR_FORWARD_DISTANCE;
+    const forwardOffsetY = directionY * DETOUR_FORWARD_DISTANCE;
+
+    const isMovementClear = (fromX: number, fromY: number, offsetX: number, offsetY: number) => {
+        const resolvedMovement = resolveCircleMovement(fromX, fromY, offsetX, offsetY, segments, circles);
+        return Math.hypot(resolvedMovement.x - offsetX, resolvedMovement.y - offsetY) < CLEAR_PATH_TOLERANCE;
+    };
+
+    for (
+        let sideDistance = PLAYER_COLLIDER_RADIUS;
+        sideDistance <= MAX_DETOUR_DISTANCE;
+        sideDistance += PLAYER_COLLIDER_RADIUS
+    ) {
         for (const side of [1, -1]) {
             const sideOffsetX = -directionY * side * sideDistance;
             const sideOffsetY = directionX * side * sideDistance;
-            const forwardOffsetX = directionX * forwardDistance;
-            const forwardOffsetY = directionY * forwardDistance;
             const waypointX = startX + sideOffsetX;
             const waypointY = startY + sideOffsetY;
 
-            const resolvedSideStep = resolveCircleMovement(startX, startY, radius, sideOffsetX, sideOffsetY, segments, circles);
-            const resolvedForwardStep = resolveCircleMovement(waypointX, waypointY, radius, forwardOffsetX, forwardOffsetY, segments, circles);
-
             if (
-                Math.hypot(resolvedSideStep.x - sideOffsetX, resolvedSideStep.y - sideOffsetY) < CLEAR_PATH_TOLERANCE &&
-                Math.hypot(resolvedForwardStep.x - forwardOffsetX, resolvedForwardStep.y - forwardOffsetY) < CLEAR_PATH_TOLERANCE
+                isMovementClear(startX, startY, sideOffsetX, sideOffsetY) &&
+                isMovementClear(waypointX, waypointY, forwardOffsetX, forwardOffsetY)
             ) {
                 return { x: waypointX, y: waypointY };
             }

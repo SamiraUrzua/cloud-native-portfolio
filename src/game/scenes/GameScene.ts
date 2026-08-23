@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import { Player, PLAYER_COLLIDER_RADIUS } from '@/game/entities/Player';
+import { Player } from '@/game/entities/Player';
 import { PerformanceOverlay } from '@/game/utils/PerformanceOverlay';
-import { circleOverlapsShapes } from '@/game/world/Collision';
-import { Level, LevelTrigger } from '@/game/world/Level';
+import { circleOverlapsShapes, PLAYER_COLLIDER_RADIUS } from '@/game/world/Collision';
+import { DEBUG_DRAW_LAYERS, Level } from '@/game/world/Level';
 
 const TARGET_VISIBLE_WORLD_SIDE = 300;
 const DEFAULT_SPAWN_NAME = 'Player';
@@ -16,11 +16,11 @@ interface GameSceneData {
 export class GameScene extends Phaser.Scene {
     private mapKey!: string;
     private spawnName!: string;
-    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-    private wasd!: { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key };
+    private keys!: Record<string, Phaser.Input.Keyboard.Key>;
     private level!: Level;
     private player!: Player;
     private performanceOverlay!: PerformanceOverlay;
+    private playerColliderDebugGraphics: Phaser.GameObjects.Graphics | undefined;
     private isSwitchingMap = false;
 
     constructor() {
@@ -43,11 +43,8 @@ export class GameScene extends Phaser.Scene {
 
         this.player = new Player(this, spawnPoint.x, spawnPoint.y);
         this.player.heightLevel = spawnPoint.heightLevel;
-        this.player.setDepth(this.level.playerDepth);
 
-        this.cursors = this.input.keyboard!.createCursorKeys();
-        this.wasd = this.input.keyboard!.addKeys('W,S,A,D') as typeof this.wasd;
-        this.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => this.setDestinationFromPointer(pointer));
+        this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
         this.input.on(Phaser.Input.Events.POINTER_UP, () => this.player.stopMovement());
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
@@ -63,45 +60,30 @@ export class GameScene extends Phaser.Scene {
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, applyCameraZoom));
 
         this.performanceOverlay = new PerformanceOverlay(this);
+        this.playerColliderDebugGraphics = DEBUG_DRAW_LAYERS['PlayerCollider'] ? this.add.graphics().setDepth(1000) : undefined;
     }
 
     update(_time: number, deltaMilliseconds: number): void {
-        if (this.isSwitchingMap) {
-            return;
-        }
+        if (this.isSwitchingMap) return;
 
         const updateStartTimestamp = performance.now();
+        const { activePointer } = this.input;
 
-        const activePointer = this.input.activePointer;
         if (activePointer.isDown) {
-            this.setDestinationFromPointer(activePointer);
+            const worldPoint = this.cameras.main.getWorldPoint(activePointer.x, activePointer.y);
+            this.player.moveTo(worldPoint.x, worldPoint.y);
         }
 
-        const previousPlayerX = this.player.x;
-        const previousPlayerY = this.player.y;
-        const isMovingLeft = this.cursors.left.isDown || this.wasd.A.isDown;
-        const isMovingRight = this.cursors.right.isDown || this.wasd.D.isDown;
-        const isMovingUp = this.cursors.up.isDown || this.wasd.W.isDown;
-        const isMovingDown = this.cursors.down.isDown || this.wasd.S.isDown;
         this.player.setMoveDirection(
-            (isMovingLeft ? -1 : 0) + (isMovingRight ? 1 : 0),
-            (isMovingUp ? -1 : 0) + (isMovingDown ? 1 : 0)
+            Number(this.keys.D.isDown || this.keys.RIGHT.isDown) - Number(this.keys.A.isDown || this.keys.LEFT.isDown),
+            Number(this.keys.S.isDown || this.keys.DOWN.isDown) - Number(this.keys.W.isDown || this.keys.UP.isDown)
         );
         this.player.update(this.level, deltaMilliseconds);
+        this.playerColliderDebugGraphics?.clear().lineStyle(1, 0x00ff00, 1).strokeCircle(this.player.x, this.player.y, PLAYER_COLLIDER_RADIUS);
 
-        const movedDistance = Math.hypot(this.player.x - previousPlayerX, this.player.y - previousPlayerY);
-        const sampleCount = Math.max(1, Math.ceil(movedDistance / PLAYER_COLLIDER_RADIUS));
-        let touchedTrigger: LevelTrigger | undefined;
-
-        for (let sampleIndex = 1; sampleIndex <= sampleCount && !touchedTrigger; sampleIndex++) {
-            const progress = sampleIndex / sampleCount;
-            const sampleX = previousPlayerX + (this.player.x - previousPlayerX) * progress;
-            const sampleY = previousPlayerY + (this.player.y - previousPlayerY) * progress;
-
-            touchedTrigger = this.level.triggers.find((levelTrigger) =>
-                circleOverlapsShapes(sampleX, sampleY, PLAYER_COLLIDER_RADIUS, levelTrigger.segments, levelTrigger.circles)
-            );
-        }
+        const touchedTrigger = this.level.triggers.find((levelTrigger) =>
+            circleOverlapsShapes(this.player.x, this.player.y, levelTrigger.segments, levelTrigger.circles)
+        );
 
         if (touchedTrigger) {
             const action = touchedTrigger.action;
@@ -117,10 +99,5 @@ export class GameScene extends Phaser.Scene {
         }
 
         this.performanceOverlay.recordFrame(performance.now() - updateStartTimestamp);
-    }
-
-    private setDestinationFromPointer(pointer: Phaser.Input.Pointer): void {
-        const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-        this.player.moveTo(worldPoint.x, worldPoint.y);
     }
 }
