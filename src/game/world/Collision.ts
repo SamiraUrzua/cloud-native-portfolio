@@ -1,13 +1,9 @@
 import { Circle, closestPointOnSegment, Segment } from '@/game/world/TiledShapes';
 
 export const PLAYER_COLLIDER_RADIUS = 8 - 0.1;
-export const MAX_DETOUR_DISTANCE = 64;
-export const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
-export const DETOUR_SEARCH_RADIUS = PLAYER_COLLIDER_RADIUS + MAX_DETOUR_DISTANCE + DETOUR_FORWARD_DISTANCE;
 const SKIN_DISTANCE = 0.05;
 const MAX_ITERATIONS = 4;
 const MIN_SLIDE_LENGTH_RATIO = 0.001;
-const CLEAR_PATH_TOLERANCE = SKIN_DISTANCE / 2;
 
 export function circleOverlapsShapes(centerX: number, centerY: number, segments: Segment[], circles: Circle[]): boolean {
     return (
@@ -133,19 +129,4 @@ export function resolveCircleMovement(
     }
 
     return { x: positionX - startX, y: positionY - startY };
-}
-
-export function isForwardPathClear(
-    startX: number,
-    startY: number,
-    directionX: number,
-    directionY: number,
-    segments: Segment[],
-    circles: Circle[]
-): boolean {
-    const forwardOffsetX = directionX * DETOUR_FORWARD_DISTANCE;
-    const forwardOffsetY = directionY * DETOUR_FORWARD_DISTANCE;
-    const resolvedMovement = resolveCircleMovement(startX, startY, forwardOffsetX, forwardOffsetY, segments, circles);
-
-    return Math.hypot(resolvedMovement.x - forwardOffsetX, resolvedMovement.y - forwardOffsetY) < CLEAR_PATH_TOLERANCE;
 }
