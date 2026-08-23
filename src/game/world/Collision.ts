@@ -3,7 +3,7 @@ import { Circle, closestPointOnSegment, Segment } from '@/game/world/TiledShapes
 export const PLAYER_COLLIDER_RADIUS = 8 - 0.1;
 const SKIN_DISTANCE = 0.05;
 const MAX_ITERATIONS = 4;
-const MAX_STOP_ANGLE_FROM_NORMAL_DEGREES = 20;
+const MAX_STOP_ANGLE_FROM_NORMAL_DEGREES = 1;
 const STOP_SLIDE_LENGTH_RATIO = Math.sin((MAX_STOP_ANGLE_FROM_NORMAL_DEGREES * Math.PI) / 180);
 
 export function circleOverlapsShapes(centerX: number, centerY: number, segments: Segment[], circles: Circle[]): boolean {
