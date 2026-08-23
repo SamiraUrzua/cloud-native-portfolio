@@ -48,7 +48,7 @@ export class GameScene extends Phaser.Scene {
         this.input.on(Phaser.Input.Events.POINTER_UP, () => this.player.stopMovement());
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        this.cameras.main.startFollow(this.player, true, 1, 1);
         this.cameras.main.fadeIn(MAP_FADE_DURATION_MS);
 
         const applyCameraZoom = (gameSize: Phaser.Structs.Size) => {
