@@ -1,7 +1,7 @@
 import { Circle, closestPointOnSegment, Segment } from '@/game/world/TiledShapes';
 
 export const PLAYER_COLLIDER_RADIUS = 8 - 0.1;
-const MAX_DETOUR_DISTANCE = 64;
+export const MAX_DETOUR_DISTANCE = 64;
 export const DETOUR_FORWARD_DISTANCE = PLAYER_COLLIDER_RADIUS * 2;
 export const DETOUR_SEARCH_RADIUS = PLAYER_COLLIDER_RADIUS + MAX_DETOUR_DISTANCE + DETOUR_FORWARD_DISTANCE;
 const SKIN_DISTANCE = 0.05;
@@ -135,41 +135,17 @@ export function resolveCircleMovement(
     return { x: positionX - startX, y: positionY - startY };
 }
 
-export function findDetourWaypoint(
+export function isForwardPathClear(
     startX: number,
     startY: number,
     directionX: number,
     directionY: number,
     segments: Segment[],
     circles: Circle[]
-): { x: number; y: number } | undefined {
+): boolean {
     const forwardOffsetX = directionX * DETOUR_FORWARD_DISTANCE;
     const forwardOffsetY = directionY * DETOUR_FORWARD_DISTANCE;
+    const resolvedMovement = resolveCircleMovement(startX, startY, forwardOffsetX, forwardOffsetY, segments, circles);
 
-    const isMovementClear = (fromX: number, fromY: number, offsetX: number, offsetY: number) => {
-        const resolvedMovement = resolveCircleMovement(fromX, fromY, offsetX, offsetY, segments, circles);
-        return Math.hypot(resolvedMovement.x - offsetX, resolvedMovement.y - offsetY) < CLEAR_PATH_TOLERANCE;
-    };
-
-    for (
-        let sideDistance = PLAYER_COLLIDER_RADIUS;
-        sideDistance <= MAX_DETOUR_DISTANCE;
-        sideDistance += PLAYER_COLLIDER_RADIUS
-    ) {
-        for (const side of [1, -1]) {
-            const sideOffsetX = -directionY * side * sideDistance;
-            const sideOffsetY = directionX * side * sideDistance;
-            const waypointX = startX + sideOffsetX;
-            const waypointY = startY + sideOffsetY;
-
-            if (
-                isMovementClear(startX, startY, sideOffsetX, sideOffsetY) &&
-                isMovementClear(waypointX, waypointY, forwardOffsetX, forwardOffsetY)
-            ) {
-                return { x: waypointX, y: waypointY };
-            }
-        }
-    }
-
-    return undefined;
+    return Math.hypot(resolvedMovement.x - forwardOffsetX, resolvedMovement.y - forwardOffsetY) < CLEAR_PATH_TOLERANCE;
 }
