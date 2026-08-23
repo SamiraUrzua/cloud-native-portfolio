@@ -33,6 +33,16 @@ export const DEBUG_DRAW_LAYERS: Record<string, boolean> = {
 
 const DEPTH_OFFSET_BETWEEN_LAYERS = 0.5;
 
+const TILE_NOT_SOLID = 0;
+const TILE_SOLID_ONLY_AT_HEIGHT_ZERO = 1;
+const TILE_SOLID_AT_ALL_HEIGHTS = 2;
+
+function getSolidKindFromProperties(colliderProperty: unknown, floorColliderProperty: unknown): number {
+    if (colliderProperty === true) return TILE_SOLID_AT_ALL_HEIGHTS;
+    if (floorColliderProperty === true) return TILE_SOLID_ONLY_AT_HEIGHT_ZERO;
+    return TILE_NOT_SOLID;
+}
+
 function getTiledProperty(tiledObject: Phaser.Types.Tilemaps.TiledObject, propertyName: string): unknown {
     return (tiledObject.properties as { name: string; value: unknown }[] | undefined)?.find(
         (property) => property.name === propertyName
@@ -83,7 +93,11 @@ export class Level {
                 const tileLayer = map.createLayer(layerName, tilesets)!;
                 tileLayer.setDepth(layerIndex).setVisible(layerName !== 'FloorCollider');
                 tileLayer.forEachTile((tile) => {
-                    if (tile.properties.collider === true) this.solidTiles[tile.y * map.width + tile.x] = 1;
+                    const tileIndex = tile.y * map.width + tile.x;
+                    this.solidTiles[tileIndex] = Math.max(
+                        this.solidTiles[tileIndex],
+                        getSolidKindFromProperties(tile.properties.collider, tile.properties.floorcollider)
+                    );
                 });
                 return;
             }
@@ -97,15 +111,20 @@ export class Level {
                 if (tileGid === undefined) return;
 
                 const tileset = map.tilesets.find((candidateTileset) => candidateTileset.containsTileIndex(tileGid));
-                const colliderProperty =
-                    getTiledProperty(tileObject, 'collider') ??
-                    (tileset?.getTileProperties(tileGid) as { collider?: unknown } | null | undefined)?.collider;
-                if (colliderProperty !== true) return;
+                const tilesetProperties = tileset?.getTileProperties(tileGid) as
+                    | { collider?: unknown; floorcollider?: unknown }
+                    | null
+                    | undefined;
+                const solidKind = getSolidKindFromProperties(
+                    getTiledProperty(tileObject, 'collider') ?? tilesetProperties?.collider,
+                    getTiledProperty(tileObject, 'floorcollider') ?? tilesetProperties?.floorcollider
+                );
+                if (solidKind === TILE_NOT_SOLID) return;
 
-                this.solidTiles[
+                const tileIndex =
                     (Math.ceil((tileObject.y ?? 0) / map.tileHeight) - 1) * map.width +
-                        Math.floor((tileObject.x ?? 0) / map.tileWidth)
-                ] = 1;
+                    Math.floor((tileObject.x ?? 0) / map.tileWidth);
+                this.solidTiles[tileIndex] = Math.max(this.solidTiles[tileIndex], solidKind);
             });
 
             const colliderSets = colliderSetsByLayerName[layerName];
@@ -158,8 +177,9 @@ export class Level {
         });
 
         map.getLayer('FloorCollider')?.tilemapLayer.forEachTile((tile) => {
-            if (typeof tile.properties.collider === 'boolean') {
-                this.solidTiles[tile.y * map.width + tile.x] = tile.properties.collider ? 1 : 0;
+            const { collider, floorcollider } = tile.properties;
+            if (typeof collider === 'boolean' || typeof floorcollider === 'boolean') {
+                this.solidTiles[tile.y * map.width + tile.x] = getSolidKindFromProperties(collider, floorcollider);
             }
         });
     }
@@ -177,15 +197,15 @@ export class Level {
     }
 
     getTileSegments(heightLevel: number, minX: number, minY: number, maxX: number, maxY: number): Segment[] {
-        if (heightLevel !== 0) return [];
-
         const { width, height, tileWidth, tileHeight } = this.map;
         const segments: Segment[] = [];
 
         for (let tileY = Math.floor(minY / tileHeight); tileY <= Math.floor(maxY / tileHeight); tileY++) {
             for (let tileX = Math.floor(minX / tileWidth); tileX <= Math.floor(maxX / tileWidth); tileX++) {
                 const isInsideMap = tileX >= 0 && tileX < width && tileY >= 0 && tileY < height;
-                if (isInsideMap && this.solidTiles[tileY * width + tileX] === 0) continue;
+                const solidKind = isInsideMap ? this.solidTiles[tileY * width + tileX] : TILE_SOLID_ONLY_AT_HEIGHT_ZERO;
+                if (solidKind === TILE_NOT_SOLID) continue;
+                if (solidKind === TILE_SOLID_ONLY_AT_HEIGHT_ZERO && heightLevel >= 1) continue;
 
                 segments.push(...rectangleToSegments(tileX * tileWidth, tileY * tileHeight, tileWidth, tileHeight));
             }
