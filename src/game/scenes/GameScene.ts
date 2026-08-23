@@ -22,6 +22,7 @@ export class GameScene extends Phaser.Scene {
     private performanceOverlay!: PerformanceOverlay;
     private playerColliderDebugGraphics: Phaser.GameObjects.Graphics | undefined;
     private isSwitchingMap = false;
+    private isPointerHoldingMovement = false;
 
     constructor() {
         super('GameScene');
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
         this.mapKey = data.mapKey;
         this.spawnName = data.spawnName ?? DEFAULT_SPAWN_NAME;
         this.isSwitchingMap = false;
+        this.isPointerHoldingMovement = false;
     }
 
     create(): void {
@@ -45,7 +47,26 @@ export class GameScene extends Phaser.Scene {
         this.player.heightLevel = spawnPoint.heightLevel;
 
         this.keys = this.input.keyboard!.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT') as Record<string, Phaser.Input.Keyboard.Key>;
-        this.input.on(Phaser.Input.Events.POINTER_UP, () => this.player.stopMovement());
+        this.input.on(Phaser.Input.Events.POINTER_DOWN, () => {
+            this.isPointerHoldingMovement = true;
+        });
+        const releasePointerMovement = () => {
+            this.isPointerHoldingMovement = false;
+            this.player.stopMovement();
+        };
+        this.input.on(Phaser.Input.Events.POINTER_UP, releasePointerMovement);
+
+        const releaseWhenNoButtonIsPressed = (event: PointerEvent) => {
+            if (event.buttons === 0) releasePointerMovement();
+        };
+        window.addEventListener('pointerup', releasePointerMovement);
+        window.addEventListener('pointercancel', releasePointerMovement);
+        window.addEventListener('pointermove', releaseWhenNoButtonIsPressed);
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            window.removeEventListener('pointerup', releasePointerMovement);
+            window.removeEventListener('pointercancel', releasePointerMovement);
+            window.removeEventListener('pointermove', releaseWhenNoButtonIsPressed);
+        });
 
         this.cameras.main.setBounds(0, 0, this.level.widthInPixels, this.level.heightInPixels);
         this.cameras.main.startFollow(this.player, true, 1, 1);
@@ -69,7 +90,7 @@ export class GameScene extends Phaser.Scene {
         const updateStartTimestamp = performance.now();
         const { activePointer } = this.input;
 
-        if (activePointer.isDown) {
+        if (this.isPointerHoldingMovement && activePointer.isDown) {
             const worldPoint = this.cameras.main.getWorldPoint(activePointer.x, activePointer.y);
             this.player.moveTo(worldPoint.x, worldPoint.y);
         }
