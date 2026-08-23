@@ -9,18 +9,15 @@ const FACING_DIRECTIONS = ['up', 'left', 'down', 'right'];
 const WALK_CYCLE_DISTANCE = 80;
 const MIN_WALKING_SPEED = SPEED / 10;
 const WALKING_GRACE_MILLISECONDS = 150;
-const FACING_CHANGE_DELAY_MILLISECONDS = 50;
 const SKIPPED_LEADING_FRAMES: Record<string, number> = { idle: 0, walk: 1 };
 
 export class Player extends Phaser.GameObjects.Sprite {
     heightLevel = 0;
     private facingDirection = 'down';
-    private pendingFacingDirection = 'down';
-    private facingChangeElapsedMilliseconds = 0;
-    private destination: { x: number; y: number } | undefined;
     private moveDirectionX = 0;
     private moveDirectionY = 0;
-    private walkingGraceRemainingMilliseconds = 0;
+    private isMovingWithPointer = false;
+    private lastWalkingTimestamp = -Infinity;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'player-idle', 0);
@@ -47,27 +44,17 @@ export class Player extends Phaser.GameObjects.Sprite {
         });
     }
 
-    setMoveDirection(directionX: number, directionY: number): void {
+    setMoveDirection(directionX: number, directionY: number, isMovingWithPointer = false): void {
         this.moveDirectionX = directionX;
         this.moveDirectionY = directionY;
-        if (directionX !== 0 || directionY !== 0) this.stopMovement();
-    }
-
-    moveTo(x: number, y: number): void {
-        this.destination = { x, y };
-    }
-
-    stopMovement(): void {
-        this.destination = undefined;
+        this.isMovingWithPointer = isMovingWithPointer;
     }
 
     update(level: Level, deltaMilliseconds: number): void {
         this.setDepth(level.getPlayerDepth(this.heightLevel));
 
-        const isUsingKeyboard = this.moveDirectionX !== 0 || this.moveDirectionY !== 0;
-        const directionX = this.destination ? this.destination.x - this.x : this.moveDirectionX;
-        const directionY = this.destination ? this.destination.y - this.y : this.moveDirectionY;
-        const directionLength = Math.hypot(directionX, directionY);
+        const isUsingKeyboard = !this.isMovingWithPointer && (this.moveDirectionX !== 0 || this.moveDirectionY !== 0);
+        const directionLength = Math.hypot(this.moveDirectionX, this.moveDirectionY);
         const stepDistance = (SPEED * deltaMilliseconds) / 1000;
         const searchRadius = stepDistance + PLAYER_COLLIDER_RADIUS;
 
@@ -85,11 +72,11 @@ export class Player extends Phaser.GameObjects.Sprite {
         const resolvedDisplacement = resolveCircleMovement(
             this.x,
             this.y,
-            (directionX / (directionLength || 1)) * stepDistance,
-            (directionY / (directionLength || 1)) * stepDistance,
+            (this.moveDirectionX / (directionLength || 1)) * stepDistance,
+            (this.moveDirectionY / (directionLength || 1)) * stepDistance,
             segments,
             objectColliders.circles,
-            this.destination !== undefined,
+            this.isMovingWithPointer,
         );
         this.setPosition(this.x + resolvedDisplacement.x, this.y + resolvedDisplacement.y);
 
@@ -99,7 +86,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         if (isUsingKeyboard || isWalking) {
             const facingX = isUsingKeyboard ? this.moveDirectionX : resolvedDisplacement.x;
             const facingY = isUsingKeyboard ? this.moveDirectionY : resolvedDisplacement.y;
-            const desiredFacingDirection =
+            this.facingDirection =
                 Math.abs(facingY) > Math.abs(facingX) * 1.1
                     ? facingY < 0
                         ? 'up'
@@ -107,20 +94,10 @@ export class Player extends Phaser.GameObjects.Sprite {
                     : facingX < 0
                       ? 'left'
                       : 'right';
-            if (desiredFacingDirection !== this.pendingFacingDirection) {
-                this.pendingFacingDirection = desiredFacingDirection;
-                this.facingChangeElapsedMilliseconds = 0;
-            }
-            this.facingChangeElapsedMilliseconds += deltaMilliseconds;
-            if (this.facingChangeElapsedMilliseconds >= FACING_CHANGE_DELAY_MILLISECONDS) {
-                this.facingDirection = this.pendingFacingDirection;
-            }
         }
 
-        this.walkingGraceRemainingMilliseconds = isWalking
-            ? WALKING_GRACE_MILLISECONDS
-            : Math.max(0, this.walkingGraceRemainingMilliseconds - deltaMilliseconds);
-        const showsWalkingAnimation = this.walkingGraceRemainingMilliseconds > 0;
+        if (isWalking) this.lastWalkingTimestamp = this.scene.time.now;
+        const showsWalkingAnimation = this.scene.time.now - this.lastWalkingTimestamp < WALKING_GRACE_MILLISECONDS;
         this.play(`player-${showsWalkingAnimation ? 'walk' : 'idle'}-${this.facingDirection}`, true);
         this.anims.timeScale = showsWalkingAnimation ? Math.max(actualSpeed, MIN_WALKING_SPEED) / WALK_CYCLE_DISTANCE : 1;
     }
