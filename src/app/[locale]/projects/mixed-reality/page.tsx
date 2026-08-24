@@ -36,13 +36,17 @@ Aquí es cuando la IA viene a salvar el proyecto. Pero no cualquier IA, sino un 
 
 Esa IA se encarga del mundo real. En el mundo virtual no hay nada que estimar, el juego ya sabe a qué distancia está cada objeto, solo hay que pedírselo. Así, cada mundo nos entrega su imagen y su mapa de profundidad. Como las dos cámaras están alineadas, podemos comparar ambas profundidades pixel por pixel y decidir qué objetos están delante de cuáles en cada punto de la imagen. Es decir: las oclusiones.
 
-Lo sé, es mucho más fácil decirlo que hacerlo. Y es aquí cuando la complejidad del proyecto explota. Estos modelos de IA son lentos y esta aplicación necesita correr en tiempo real. Una cámara típica suele tener 30 o 60 cuadros por segundo (frames), pero el modelo de IA (Depth Anything V2), en su versión pequeña, solo lograba 10-15 por segundo en mi tarjeta gráfica decente, es decir, la mayoría de los frames se quedaba sin mapa de profundidad.
+Lo sé, es mucho más fácil decirlo que hacerlo. Y es aquí cuando la complejidad del proyecto explota. Estos modelos de IA son lentos y esta aplicación necesita correr en tiempo real. Una cámara típica suele tener 30 o 60 cuadros por segundo (frames), pero el modelo de IA (Depth Anything V2), en su versión pequeña, solo lograba 10-15 por segundo en mi tarjeta gráfica decente, es decir, la mayoría de los frames se quedaba sin mapa de profundidad, y por lo tanto, sin imagen final.
+
+<Video src="/mixed-reality/Original.mp4" caption="Representación de la fluidez con los cuadros por segundo limitados por el modelo de profundidad." class="max-w-md" autoplay loop muted playsinline />
 
 Pero bueno, si no tenemos esos mapas de profundidad que nos faltan, podemos simplemente estimarlos a partir de los que tenemos. Si esperamos un poco hasta que nuestra IA genere el siguiente mapa de profundidad, tendremos el anterior y el nuevo. Con esos dos como referencia se pueden hacer estimaciones bastante buenas de todos los que faltan entre medio. Esto se conoce como interpolación. Lo bueno de esta solución es que resuelve el problema de la lentitud de los modelos y de paso nos ofrece un ajuste automático, entre más capacidad de cómputo tengamos, menos mapas de profundidad necesitaremos estimar.
 
 Y listo, problema solucionado. ¿No? Pues no. Esto es como un juego de golpear al topo, le pego a un problema y se levantan dos más. El primer problema aparece por la propia naturaleza de este método. Al tener que esperar al siguiente frame se crea una latencia extra, y entre más frames generamos, más tenemos que esperar y, por lo tanto, más latencia. Aquí no hay vuelta que darle, no podemos evitar esa latencia con el método actual.
 
 Pero todavía queda algo más. Hasta ahora estábamos mostrando en la salida de nuestro software los frames finales apenas estaban disponibles. Esto funciona relativamente bien cuando todos los frames tardan casi lo mismo en procesarse. Con los nuevos cambios, los frames ya no tardan todos lo mismo en calcularse. Algunos están listos casi inmediatamente y otros necesitan bastante más tiempo, así que terminamos mostrando los frames a un ritmo muy diferente al que fueron capturados.
+
+<Video src="/mixed-reality/Interpolated.mp4" caption="Representación de la fluidez con interpolación, mostrando cada frame apenas está disponible." class="max-w-md" autoplay loop muted playsinline />
 
 Pero, ¿qué me estás pidiendo? ¿Que haga un sistema que tenga consistencia temporal, minimice la latencia y además pueda amortiguar los tiempos variables de procesamiento de los frames? ¡Pues claro que sí! Y no solo eso. También que funcione de forma adaptativa, ajustándose automáticamente a la capacidad de cómputo disponible.
 
@@ -51,6 +55,9 @@ Para solucionar todos estos problemas, el día de hoy presentamos, en una oferta
 ¡Introduciendo una nueva (muy vieja) y revolucionaria tecnología que permite acumular una cantidad variable de latencia para absorber todas las inconsistencias de reproducción! En lugar de mostrar cada frame apenas está disponible, esperamos un pequeño margen de tiempo antes de comenzar a mostrarlos, permitiendo mantener un ritmo de reproducción mucho más consistente.
 
 Pero espera, ¡hay más! El tamaño de este buffer no es fijo. El sistema observa cuánto están tardando en llegar los frames y ajusta dinámicamente cuánto necesita acumular. Si los frames comienzan a tardar más, el buffer crece para amortiguar la variación. Si empiezan a llegar más rápido, el buffer se reduce para recuperar la menor latencia posible.
+
+<Video src="/mixed-reality/Buffer.mp4" caption="
+Representación de la fluidez con Buffer Adaptativo, la mayor fluidez con la menor latencia posible." class="max-w-md" autoplay loop muted playsinline />
 `,
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
