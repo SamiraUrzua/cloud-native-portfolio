@@ -1,3 +1,5 @@
+'use client';
+
 interface ArticleContentProps {
   content: string;
 }
@@ -17,6 +19,12 @@ export function ArticleContent({ content }: ArticleContentProps) {
         for (const attributeMatch of trimmedBlock.matchAll(/(\w+)="([^"]*)"/g)) {
           attributes[attributeMatch[1]] = attributeMatch[2];
         }
+
+        const captionElement = attributes.caption && (
+          <figcaption className="text-body-muted text-xl text-center">
+            {attributes.caption}
+          </figcaption>
+        );
 
         if (trimmedBlock.startsWith('<Pullquote>')) {
           return (
@@ -47,31 +55,44 @@ export function ArticleContent({ content }: ArticleContentProps) {
                 className="w-full rounded-lg"
               />
 
-              {attributes.caption && (
-                <figcaption className="text-body-muted text-sm text-center">
-                  {attributes.caption}
-                </figcaption>
-              )}
+              {captionElement}
             </figure>
           );
         }
 
         if (trimmedBlock.startsWith('<Video ')) {
-          if (!attributes.src) return null;
+          const allVideoAttributes: Record<string, string> = {};
+          for (const videoAttributeMatch of trimmedBlock
+            .slice('<Video'.length)
+            .matchAll(/([\w-]+)(?:="([^"]*)")?/g)) {
+            if (videoAttributeMatch[1] === 'caption') continue;
+            allVideoAttributes[videoAttributeMatch[1]] = videoAttributeMatch[2] ?? '';
+          }
+
+          const { class: videoClassName = '', ...videoAttributes } = allVideoAttributes;
+
+          if (!videoAttributes.src) return null;
 
           return (
-            <figure key={blockIndex} className="flex flex-col gap-2 py-8">
+            <figure key={blockIndex} className="flex flex-col items-center gap-2 py-8">
               <video
-                src={attributes.src}
-                controls
-                className="w-full rounded-lg"
+                ref={(videoElement) => {
+                  if (!videoElement) return;
+
+                  for (const [attributeName, attributeValue] of Object.entries(videoAttributes)) {
+                    videoElement.setAttribute(attributeName, attributeValue);
+                  }
+
+                  videoElement.muted = videoElement.hasAttribute('muted');
+
+                  if (videoElement.hasAttribute('autoplay')) {
+                    videoElement.play().catch(() => {});
+                  }
+                }}
+                className={`w-full rounded-lg ${videoClassName}`}
               />
 
-              {attributes.caption && (
-                <figcaption className="text-body-muted text-sm">
-                  {attributes.caption}
-                </figcaption>
-              )}
+              {captionElement}
             </figure>
           );
         }
