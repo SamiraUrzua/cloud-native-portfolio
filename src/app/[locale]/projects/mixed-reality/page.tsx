@@ -34,7 +34,7 @@ Okay, pero ¿cómo rayos podemos hacer eso? No es como que podamos conocer la tr
 
 Aquí es cuando la IA viene a salvar el proyecto. Pero no cualquier IA, sino un modelo de profundidad métrica, capaz de escanear una imagen y producir un mapa de profundidad, que en simples palabras es una estimación de la distancia a la que está cada pixel de la cámara.
 
-Esa IA se encarga del mundo real. En el mundo virtual no hay nada que estimar, el juego ya sabe a qué distancia está cada objeto, solo hay que pedírselo. Así, cada mundo nos entrega su imagen y su mapa de profundidad. Como las dos cámaras están alineadas, podemos comparar ambas profundidades pixel por pixel y decidir qué objetos están delante de cuáles en cada punto de la imagen. Es decir: las oclusiones.
+Esa IA se encarga del mundo real. En el mundo virtual no hay nada que estimar, el juego ya sabe a qué distancia está cada objeto, solo hay que pedírselo. Así, cada mundo nos entrega su imagen y su mapa de profundidad. Como las dos cámaras están alineadas, podemos comparar ambas profundidades pixel por pixel y decidir qué objetos están delante de cuáles en cada punto de la imagen. Es decir, las oclusiones.
 
 Lo sé, es mucho más fácil decirlo que hacerlo. Y es aquí cuando la complejidad del proyecto explota. Estos modelos de IA son lentos y esta aplicación necesita correr en tiempo real. Una cámara típica suele tener 30 o 60 cuadros por segundo (frames), pero el modelo de IA (Depth Anything V2), en su versión pequeña, solo lograba 10-15 por segundo en mi tarjeta gráfica decente, es decir, la mayoría de los frames se quedaba sin mapa de profundidad, y por lo tanto, sin imagen final.
 
@@ -56,8 +56,20 @@ Para solucionar todos estos problemas, el día de hoy presentamos, en una oferta
 
 Pero espera, ¡hay más! El tamaño de este buffer no es fijo. El sistema observa cuánto están tardando en llegar los frames y ajusta dinámicamente cuánto necesita acumular. Si los frames comienzan a tardar más, el buffer crece para amortiguar la variación. Si empiezan a llegar más rápido, el buffer se reduce para recuperar la menor latencia posible.
 
+Con eso, los tres problemas quedan resueltos, la lentitud del modelo, la latencia y la inconsistencia al reproducir. Ya por fin se ve fluido.
+
 <Video src="/mixed-reality/Buffer.mp4" caption="
 Representación de la fluidez con Buffer Adaptativo, la mayor fluidez con la menor latencia posible." class="max-w-md" autoplay loop muted playsinline />
+
+Soy yo la que está caminando en el video con mis lentes de realidad virtual y mis sensores de cuerpo, es una buena caminata ¿no? La grabé unas 30 veces y esa fue la mejor.
+
+En fin, la primera vez que hice funcionar el software y vi personajes virtuales en mi habitación, no se sintió como un simple efecto cool, se sintió como si estuvieran ahí, conmigo. Es algo que no se ve mucho en la industria, encontré pocos proyectos similares y todos necesitaban hardware especializado. ¿Seré la primera? Poco probable, pero se vale soñar.
+
+Creo que parte de esa emoción viene de mi cariño por el proyecto, del sentido de pertenencia. Entiendo cada pieza, sé por qué está ahí y qué pasaría si la quitara, y eso hace que lo sienta mío. Otra historia es lo que pasa con el vibe coding. La IA te da soluciones que funcionan, pero que no son ni simples ni elegantes, y que apenas eres capaz de entender por lo enredadas que son. Por eso no hay chance de que las sientas propias.
+
+No soy de las que se oponen ciegamente a la IA, mi proyecto usa un modelo y, no solo eso, también la usé como herramienta para programar. Lo importante, para mí, es entender a fondo cómo funcionan estas herramientas y cuáles son sus limitaciones, para así trabajar con lo mejor de ambos mundos. Yo me encargo de lo que la IA no puede o no hace bien, y ella de lo que hace mejor que yo.
+
+En el año 2008 el tío Bob lanzó un libro muy conocido en el mundo de la informática, "Clean Code", una guía para escribir código legible, ordenado y que se mantenga en el tiempo. Personalmente detesto ese libro y tengo mis reservas con el tío Bob. Sin embargo, hay una idea en él que me parece brillante, la filosofía del Boy Scout aplicada al código, que dice "Intenta dejar el código mejor que como lo encontraste". 
 `,
   },
 } as const satisfies StrictTranslations<Record<Locale, any>>;
